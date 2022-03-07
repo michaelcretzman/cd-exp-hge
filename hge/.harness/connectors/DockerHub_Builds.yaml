@@ -1,0 +1,18 @@
+connector:
+  name: DockerHub Builds
+  identifier: DockerHub_Builds
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: DockerRegistry
+  spec:
+    dockerRegistryUrl: https://index.docker.io/v1/
+    providerType: DockerHub
+    auth:
+      type: UsernamePassword
+      spec:
+        username: cretzman
+        usernameRef: null
+        passwordRef: Docker_Hub_MRC
+    delegateSelectors:
+    - gcpdocplay

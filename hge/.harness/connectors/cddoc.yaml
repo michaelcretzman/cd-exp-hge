@@ -1,0 +1,12 @@
+connector:
+  name: cd-doc
+  identifier: cddoc
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: K8sCluster
+  spec:
+    credential:
+      type: InheritFromDelegate
+    delegateSelectors:
+    - docplayground

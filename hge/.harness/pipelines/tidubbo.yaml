@@ -1,0 +1,50 @@
+pipeline:
+    name: ti-dubbo
+    identifier: tidubbo
+    properties:
+        ci:
+            codebase:
+                connectorRef: account.howdi
+                repoName: dubbo
+                build: <+input>
+    stages:
+        - stage:
+              name: unit-test
+              identifier: unitteststi
+              type: CI
+              spec:
+                  cloneCodebase: true
+                  execution:
+                      steps:
+                          - step:
+                                type: RunTests
+                                name: runTestsWithIntelligence
+                                identifier: runTestsWithIntelligence
+                                spec:
+                                    connectorRef: account.GCR
+                                    image: maven:3-openjdk-8
+                                    args: test -Dmaven.test.failure.ignore=true -DfailIfNoTests=false
+                                    buildTool: Maven
+                                    language: Java
+                                    packages: org.apache.dubbo,com.alibaba.dubbo
+                                    runOnlySelectedTests: true
+                                    reports:
+                                        type: JUnit
+                                        spec:
+                                            paths:
+                                                - "**/*.xml"
+                                    resources:
+                                        limits:
+                                            memory: 2Gi
+                                            cpu: 2000m
+                                timeout: 60m
+                  infrastructure:
+                      type: KubernetesDirect
+                      spec:
+                          connectorRef: Kubernetes_Quickstart
+                          namespace: harness-delegate
+              variables: []
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    description: TI for open source project dubbo
+    tags: {}

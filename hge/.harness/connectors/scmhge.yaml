@@ -1,0 +1,23 @@
+connector:
+  name: scm-hge
+  identifier: scmhge
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: Github
+  spec:
+    url: https://github.com/michaelcretzman
+    validationRepo: default-k8s-manifests
+    authentication:
+      type: Http
+      spec:
+        type: UsernameToken
+        spec:
+          username: michaelcretzman
+          tokenRef: mrcgithubpathge
+    apiAccess:
+      type: Token
+      spec:
+        tokenRef: mrcgithubpathge
+    executeOnDelegate: false
+    type: Account

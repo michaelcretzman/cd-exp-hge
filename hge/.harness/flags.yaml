@@ -1,0 +1,45 @@
+featureFlags:
+  flags:
+  - flag:
+      name: Feature Flag
+      identifier: Feature_Flag
+      description: ""
+      permanent: false
+      spec:
+        type: boolean
+        default:
+          onVariation: "true"
+          offVariation: "false"
+        variations:
+        - identifier: "true"
+          value: "true"
+        - identifier: "false"
+          value: "false"
+      environments:
+      - identifier: test
+        default:
+          onVariation: "true"
+          offVariation: "false"
+        state: "off"
+      - identifier: test1
+        default:
+          onVariation: "true"
+          offVariation: "false"
+        state: "off"
+      - identifier: helmchart
+        default:
+          onVariation: "true"
+          offVariation: "false"
+        state: "off"
+      - identifier: kustomize
+        default:
+          onVariation: "true"
+          offVariation: "false"
+        state: "off"
+      - identifier: tweet
+        default:
+          onVariation: "true"
+          offVariation: "false"
+        state: "off"
+  projectIdentifier: CD_Examples
+  orgIdentifier: default

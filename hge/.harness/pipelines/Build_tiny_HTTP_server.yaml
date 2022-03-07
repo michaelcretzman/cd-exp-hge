@@ -1,0 +1,92 @@
+pipeline:
+    name: Build tiny HTTP server
+    identifier: Build_tiny_HTTP_server
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    properties:
+        ci:
+            codebase:
+                connectorRef: sally
+                build: <+input>
+    stages:
+        - stage:
+              name: Build
+              identifier: Build
+              type: CI
+              spec:
+                  cloneCodebase: true
+                  infrastructure:
+                      type: KubernetesDirect
+                      spec:
+                          connectorRef: docbuilds
+                          namespace: default
+                  execution:
+                      steps:
+                          - step:
+                                type: Run
+                                name: build
+                                identifier: make_build
+                                spec:
+                                    connectorRef: DockerHub_Builds
+                                    image: golang:1.17.3
+                                    command: |-
+                                        make build
+                                        make lint
+                                    privileged: false
+                          - step:
+                                type: Run
+                                name: test
+                                identifier: run_ex
+                                spec:
+                                    connectorRef: DockerHub_Builds
+                                    image: golang:1.17.3
+                                    command: make cover
+                                    privileged: false
+                                    resources:
+                                        limits:
+                                            memory: 2Gi
+                                            cpu: "1"
+                          - step:
+                                type: BuildAndPushGCR
+                                name: Build and Push to GCR
+                                identifier: Build_and_Push_to_GCR
+                                spec:
+                                    connectorRef: GCP_Example
+                                    host: us.gcr.io
+                                    projectID: harnessplayground
+                                    imageName: sally
+                                    tags:
+                                        - <+pipeline.sequenceId>
+                                    optimize: true
+                          - step:
+                                type: RestoreCacheGCS
+                                name: restore
+                                identifier: restore
+                                spec:
+                                    connectorRef: GCP_Example
+                                    bucket: cie
+                                    key: demo-pipeline
+                                    archiveFormat: Tar
+                                    resources:
+                                        limits:
+                                            memory: 2Gi
+                                            cpu: "1"
+                          - step:
+                                type: SaveCacheGCS
+                                name: saveCache
+                                identifier: saveCache
+                                spec:
+                                    connectorRef: GCP_Example
+                                    bucket: cie
+                                    key: demo-pipeline
+                                    sourcePaths:
+                                        - /go
+                                    archiveFormat: Tar
+                                    resources:
+                                        limits:
+                                            memory: 2Gi
+                                            cpu: "1"
+                  sharedPaths:
+                      - /go
+              variables: []

@@ -1,0 +1,302 @@
+pipeline:
+    name: tooltips latest
+    identifier: tooltips_latest
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    timeout: <+input>
+    tags: {}
+    stages:
+        - stage:
+              name: tooltips
+              identifier: tooltips
+              description: ""
+              type: Deployment
+              spec:
+                  serviceConfig:
+                      serviceRef: <+input>
+                      serviceDefinition:
+                          type: Kubernetes
+                          spec:
+                              variables: []
+                              manifests:
+                                  - manifest:
+                                        identifier: manifest
+                                        type: K8sManifest
+                                        spec:
+                                            store:
+                                                type: Http
+                                                spec:
+                                                    connectorRef: <+input>
+                                                    gitFetchType: Branch
+                                                    paths:
+                                                        - foo
+                                                    repoName: <+input>
+                                                    branch: main
+                                            skipResourceVersioning: false
+                                  - manifest:
+                                        identifier: chart
+                                        type: HelmChart
+                                        spec:
+                                            store:
+                                                type: Http
+                                                spec:
+                                                    connectorRef: <+input>
+                                            chartName: todolist
+                                            chartVersion: <+input>
+                                            helmVersion: V2
+                                            skipResourceVersioning: false
+                  infrastructure:
+                      environmentRef: <+input>
+                      infrastructureDefinition:
+                          type: KubernetesDirect
+                          spec:
+                              connectorRef: <+input>
+                              namespace: <+input>
+                              releaseName: release-<+INFRA_KEY>
+                          provisioner:
+                              steps:
+                                  - step:
+                                        type: TerraformPlan
+                                        name: Terraform Plan Infra
+                                        identifier: Terraform_Plan_Infra
+                                        timeout: 10m
+                                        spec:
+                                            provisionerIdentifier: <+input>
+                                            configuration:
+                                                command: Apply
+                                                configFiles:
+                                                    store:
+                                                        type: Git
+                                                        spec:
+                                                            gitFetchType: Branch
+                                                            connectorRef: <+input>
+                                                            branch: <+input>
+                                                            folderPath: <+input>
+                                                secretManagerRef: <+input>
+                                  - step:
+                                        type: HarnessApproval
+                                        name: Man Approval Infra
+                                        identifier: Man_Approval_Infra
+                                        timeout: 1d
+                                        spec:
+                                            approvalMessage: <+input>
+                                            includePipelineExecutionHistory: true
+                                            approvers:
+                                                userGroups: <+input>
+                                                minimumCount: <+input>
+                                                disallowPipelineExecutor: true
+                                            approverInputs: []
+                                  - step:
+                                        type: TerraformApply
+                                        name: Terraform Apply infrastructure
+                                        identifier: Terraform_Apply_infrastructure
+                                        timeout: 10m
+                                        spec:
+                                            provisionerIdentifier: <+input>
+                                            configuration:
+                                                type: InheritFromPlan
+                                  - step:
+                                        type: TerraformDestroy
+                                        name: Terraform Destroy infrastructure
+                                        identifier: Terraform_Destroy_infrastructure
+                                        spec:
+                                            provisionerIdentifier: <+input>
+                                            configuration:
+                                                type: InheritFromApply
+                                        timeout: 10m
+                              rollbackSteps:
+                                  - step:
+                                        type: TerraformRollback
+                                        name: Terraform Rollback infrastructure
+                                        identifier: Terraform_Rollback_infrastructure
+                                        timeout: 10m
+                                        spec:
+                                            provisionerIdentifier: <+input>
+                      allowSimultaneousDeployments: false
+                  execution:
+                      steps:
+                          - parallel:
+                                - step:
+                                      type: ShellScript
+                                      name: Shel Script
+                                      identifier: Shel_Script
+                                      spec:
+                                          shell: Bash
+                                          onDelegate: true
+                                          source:
+                                              type: Inline
+                                              spec:
+                                                  script: echo hello
+                                          environmentVariables: []
+                                          outputVariables: []
+                                          executionTarget: {}
+                                      timeout: 10m
+                                      failureStrategies: []
+                                - step:
+                                      type: Http
+                                      name: HTTP
+                                      identifier: HTTP
+                                      spec:
+                                          url: <+input>
+                                          method: GET
+                                          headers: []
+                                          outputVariables: []
+                                          requestBody: <+input>
+                                      timeout: 10s
+                          - parallel:
+                                - step:
+                                      type: K8sBGSwapServices
+                                      name: Swap
+                                      identifier: Swap
+                                      spec:
+                                          skipDryRun: false
+                                      timeout: 10m
+                                - step:
+                                      type: K8sBlueGreenDeploy
+                                      name: Stage
+                                      identifier: Stage
+                                      spec:
+                                          skipDryRun: false
+                                      timeout: 10m
+                          - parallel:
+                                - step:
+                                      type: K8sApply
+                                      name: Kubernetes Apply
+                                      identifier: Kubernetes_Apply
+                                      spec:
+                                          filePaths:
+                                              - <+execution.steps.HTTP.name>
+                                          skipDryRun: false
+                                          skipSteadyStateCheck: false
+                                      timeout: 10m
+                                - step:
+                                      type: K8sDelete
+                                      name: Kubernetes Delete
+                                      identifier: Kubernetes_Delete
+                                      spec:
+                                          deleteResources:
+                                              type: ResourceName
+                                              spec:
+                                                  resourceNames:
+                                                      - <+execution.steps.HTTP.name>
+                                      timeout: 10m
+                                - step:
+                                      type: K8sCanaryDelete
+                                      name: Canary Delete
+                                      identifier: Canary_Delete
+                                      spec:
+                                          skipDryRun: false
+                                      timeout: 10m
+                                - step:
+                                      type: K8sRollingDeploy
+                                      name: Rolling
+                                      identifier: Rolling
+                                      spec:
+                                          skipDryRun: false
+                                      timeout: 10m
+                                - step:
+                                      type: K8sCanaryDeploy
+                                      name: Canary
+                                      identifier: Canary
+                                      spec:
+                                          skipDryRun: false
+                                          instanceSelection:
+                                              type: Count
+                                              spec:
+                                                  count: 1
+                                      timeout: 10m
+                                - step:
+                                      type: K8sScale
+                                      name: Scale
+                                      identifier: Scale
+                                      spec:
+                                          workload: <+input>
+                                          skipSteadyStateCheck: false
+                                          instanceSelection:
+                                              type: Count
+                                              spec:
+                                                  count: 1
+                                      timeout: 10m
+                                - step:
+                                      type: K8sRollingRollback
+                                      name: Rolling Rollback
+                                      identifier: Rolling_Rollback
+                                      spec:
+                                          skipDryRun: false
+                                      timeout: 10m
+                          - parallel:
+                                - step:
+                                      type: TerraformDestroy
+                                      name: Terraform Destory
+                                      identifier: Terraform_Destory
+                                      spec:
+                                          provisionerIdentifier: <+input>
+                                          configuration:
+                                              type: InheritFromApply
+                                      timeout: 10m
+                                - step:
+                                      type: TerraformRollback
+                                      name: Terraform Rollback
+                                      identifier: Terraform_Rollback
+                                      spec:
+                                          provisionerIdentifier: <+input>
+                                      timeout: 10m
+                                - step:
+                                      type: TerraformApply
+                                      name: Terraform Apply
+                                      identifier: Terraform_Apply
+                                      spec:
+                                          provisionerIdentifier: <+input>
+                                          configuration:
+                                              type: Inline
+                                              spec:
+                                                  configFiles:
+                                                      store:
+                                                          type: Git
+                                                          spec:
+                                                              gitFetchType: Branch
+                                                              connectorRef: <+input>
+                                                              branch: <+input>
+                                                              folderPath: <+input>
+                                      timeout: 10m
+                                - step:
+                                      type: TerraformPlan
+                                      name: Terraform Plan
+                                      identifier: Terraform_Plan
+                                      spec:
+                                          configuration:
+                                              command: Apply
+                                              configFiles:
+                                                  store:
+                                                      type: Git
+                                                      spec:
+                                                          gitFetchType: Branch
+                                                          connectorRef: <+input>
+                                                          branch: <+input>
+                                                          folderPath: <+input>
+                                              secretManagerRef: <+input>
+                                          provisionerIdentifier: <+input>
+                                      timeout: 10m
+                          - step:
+                                type: HarnessApproval
+                                name: Manual Approval Execution
+                                identifier: Manual_Approval_Execution
+                                spec:
+                                    approvalMessage: Please review the following information and approve the pipeline progression
+                                    includePipelineExecutionHistory: true
+                                    approvers:
+                                        userGroups: <+input>
+                                        minimumCount: 1
+                                        disallowPipelineExecutor: false
+                                    approverInputs: []
+                                timeout: 1d
+                      rollbackSteps: []
+                  serviceDependencies: []
+              tags: {}
+              failureStrategies:
+                  - onFailure:
+                        errors:
+                            - AllErrors
+                        action:
+                            type: StageRollback
+              variables: []

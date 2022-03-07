@@ -1,0 +1,86 @@
+pipeline:
+    name: CD Quickstart
+    identifier: CD_Quickstart
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags:
+        docs: CD
+        yaml example: ""
+    stages:
+        - stage:
+              name: Deploy Service
+              identifier: Deploy_Service
+              description: deploy
+              type: Deployment
+              spec:
+                  serviceConfig:
+                      serviceDefinition:
+                          type: Kubernetes
+                          spec:
+                              artifacts:
+                                  sidecars: []
+                              manifests:
+                                  - manifest:
+                                        identifier: nginx
+                                        type: K8sManifest
+                                        spec:
+                                            store:
+                                                type: Github
+                                                spec:
+                                                    connectorRef: quickstart
+                                                    gitFetchType: Branch
+                                                    paths:
+                                                        - content/en/examples/application/nginx-app.yaml
+                                                    branch: main
+                                            skipResourceVersioning: false
+                              variables: []
+                              manifestOverrideSets: []
+                      serviceRef: nginx
+                  infrastructure:
+                      environmentRef: test1
+                      infrastructureDefinition:
+                          type: KubernetesDirect
+                          spec:
+                              connectorRef: Kubernetes_Quickstart
+                              namespace: default
+                              releaseName: quickstart
+                      allowSimultaneousDeployments: false
+                      infrastructureKey: Docs
+                  execution:
+                      steps:
+                          - step:
+                                name: Rollout Deployment
+                                identifier: rolloutDeployment
+                                type: K8sRollingDeploy
+                                timeout: 10m
+                                spec:
+                                    skipDryRun: true
+                                    delegateSelectors:
+                                        - gcpdocplay
+                                failureStrategies: []
+                      rollbackSteps:
+                          - step:
+                                name: Rollback Rollout Deployment
+                                identifier: rollbackRolloutDeployment
+                                type: K8sRollingRollback
+                                timeout: 10m
+                                spec:
+                                    skipDryRun: false
+                                failureStrategies: []
+                  serviceDependencies: []
+              tags: {}
+              failureStrategies:
+                  - onFailure:
+                        errors:
+                            - AllErrors
+                        action:
+                            type: Abort
+              when:
+                  pipelineStatus: Success
+              variables: []
+    flowControl:
+        barriers: []
+    variables:
+        - name: foo
+          type: String
+          value: <+input>

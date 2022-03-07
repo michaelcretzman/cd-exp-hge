@@ -1,0 +1,160 @@
+pipeline:
+    name: test
+    identifier: test
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    stages:
+        - stage:
+              name: test
+              identifier: test
+              description: ""
+              type: Deployment
+              spec:
+                  serviceConfig:
+                      serviceRef: vars
+                      serviceDefinition:
+                          type: Kubernetes
+                          spec:
+                              variables:
+                                  - name: foo
+                                    type: String
+                                    value: foo1
+                  infrastructure:
+                      environmentRef: vars
+                      infrastructureDefinition:
+                          type: KubernetesDirect
+                          spec:
+                              connectorRef: cddoc
+                              namespace: default
+                              releaseName: release-<+INFRA_KEY>
+                      allowSimultaneousDeployments: false
+                  execution:
+                      steps:
+                          - step:
+                                type: ShellScript
+                                name: echo
+                                identifier: echo
+                                spec:
+                                    shell: Bash
+                                    onDelegate: true
+                                    source:
+                                        type: Inline
+                                        spec:
+                                            script: echo <+serviceVariables.foo>
+                                    environmentVariables: []
+                                    outputVariables: []
+                                    executionTarget: {}
+                                timeout: 10m
+                      rollbackSteps: []
+              tags: {}
+              failureStrategies:
+                  - onFailure:
+                        errors:
+                            - AllErrors
+                        action:
+                            type: StageRollback
+        - stage:
+              name: test2
+              identifier: test2
+              description: ""
+              type: Deployment
+              spec:
+                  serviceConfig:
+                      useFromStage:
+                          stage: test
+                      stageOverrides:
+                          artifacts:
+                              sidecars: []
+                          manifests: []
+                          variables:
+                              - name: foo
+                                type: String
+                                value: bar2
+                  infrastructure:
+                      infrastructureDefinition:
+                          type: KubernetesDirect
+                          spec:
+                              connectorRef: cddoc
+                              namespace: default
+                              releaseName: release-<+INFRA_KEY>
+                      environmentRef: vars
+                      allowSimultaneousDeployments: false
+                  execution:
+                      steps:
+                          - step:
+                                type: ShellScript
+                                name: echo
+                                identifier: echo
+                                spec:
+                                    shell: Bash
+                                    onDelegate: true
+                                    source:
+                                        type: Inline
+                                        spec:
+                                            script: echo <+serviceVariables.foo>
+                                    environmentVariables: []
+                                    outputVariables: []
+                                    executionTarget: {}
+                                timeout: 10m
+                      rollbackSteps: []
+              tags: {}
+              failureStrategies:
+                  - onFailure:
+                        errors:
+                            - AllErrors
+                        action:
+                            type: StageRollback
+        - stage:
+              name: test3
+              identifier: test3
+              description: ""
+              type: Deployment
+              spec:
+                  serviceConfig:
+                      serviceRef: vars
+                      serviceDefinition:
+                          type: Kubernetes
+                          spec:
+                              variables:
+                                  - name: foo
+                                    type: String
+                                    value: bar3
+                  infrastructure:
+                      environmentRef: vars
+                      infrastructureDefinition:
+                          type: KubernetesDirect
+                          spec:
+                              connectorRef: cddoc
+                              namespace: default
+                              releaseName: release-<+INFRA_KEY>
+                      allowSimultaneousDeployments: false
+                  execution:
+                      steps:
+                          - step:
+                                type: ShellScript
+                                name: echo
+                                identifier: echo
+                                spec:
+                                    shell: Bash
+                                    onDelegate: true
+                                    source:
+                                        type: Inline
+                                        spec:
+                                            script: |-
+                                                echo <+pipeline.stages.test.spec.serviceConfig.serviceDefinition.spec.variables.foo>
+
+                                                echo <+serviceVariables.foo>
+                                    environmentVariables: []
+                                    outputVariables: []
+                                    executionTarget: {}
+                                timeout: 10m
+                      rollbackSteps: []
+              tags: {}
+              variables: []
+              failureStrategies:
+                  - onFailure:
+                        errors:
+                            - AllErrors
+                        action:
+                            type: StageRollback

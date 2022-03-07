@@ -1,0 +1,187 @@
+pipeline:
+    name: Canary
+    identifier: Canary
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    stages:
+        - stage:
+              name: Canary
+              identifier: Canary
+              description: ""
+              type: Deployment
+              spec:
+                  serviceConfig:
+                      serviceRef: nginx
+                      serviceDefinition:
+                          type: Kubernetes
+                          spec:
+                              variables:
+                                  - name: foo
+                                    type: String
+                                    value: <+input>
+                              manifests:
+                                  - manifest:
+                                        identifier: manifest
+                                        type: K8sManifest
+                                        spec:
+                                            store:
+                                                type: Github
+                                                spec:
+                                                    connectorRef: harnessdocs
+                                                    gitFetchType: Branch
+                                                    paths:
+                                                        - default-k8s-manifests/Manifests/Files/templates
+                                                    branch: main
+                                            skipResourceVersioning: false
+                                  - manifest:
+                                        identifier: values
+                                        type: Values
+                                        spec:
+                                            store:
+                                                type: Github
+                                                spec:
+                                                    connectorRef: harnessdocs
+                                                    gitFetchType: Branch
+                                                    paths:
+                                                        - default-k8s-manifests/Manifests/Files/ng-values-noart.yaml
+                                                    branch: main
+                  infrastructure:
+                      environmentRef: test1
+                      infrastructureDefinition:
+                          type: KubernetesDirect
+                          spec:
+                              connectorRef: cddoc
+                              namespace: default
+                              releaseName: release-<+INFRA_KEY>
+                      allowSimultaneousDeployments: false
+                  execution:
+                      steps:
+                          - step:
+                                type: K8sApply
+                                name: Apply Job
+                                identifier: Apply_Job
+                                spec:
+                                    filePaths:
+                                        - jobs/job.yaml
+                                    skipDryRun: false
+                                    skipSteadyStateCheck: false
+                                timeout: 10m
+                          - step:
+                                type: ShellScript
+                                name: Job Output
+                                identifier: Job_Output
+                                spec:
+                                    shell: Bash
+                                    onDelegate: true
+                                    source:
+                                        type: Inline
+                                        spec:
+                                            script: |-
+                                                echo
+
+                                                pods=$(kubectl get pods -n <+infra.namespace> --selector=job-name=pi --output=jsonpath='{.items[*].metadata.name}')
+
+                                                kubectl logs -n <+infra.namespace> $pods
+
+                                                echo
+                                    environmentVariables: []
+                                    outputVariables: []
+                                    executionTarget: {}
+                                timeout: 10m
+                          - stepGroup:
+                                name: Canary Deployment
+                                identifier: canaryDepoyment
+                                steps:
+                                    - step:
+                                          name: Canary Deployment
+                                          identifier: canaryDeployment
+                                          type: K8sCanaryDeploy
+                                          timeout: 10m
+                                          spec:
+                                              instanceSelection:
+                                                  type: Count
+                                                  spec:
+                                                      count: 1
+                                              skipDryRun: false
+                                    - step:
+                                          name: Canary Delete
+                                          identifier: canaryDelete
+                                          type: K8sCanaryDelete
+                                          timeout: 10m
+                                          spec: {}
+                                rollbackSteps:
+                                    - step:
+                                          name: Canary Delete
+                                          identifier: rollbackCanaryDelete
+                                          type: K8sCanaryDelete
+                                          timeout: 10m
+                                          spec: {}
+                                when:
+                                    stageStatus: Failure
+                                failureStrategies: []
+                                spec: {}
+                          - step:
+                                type: ShellScript
+                                name: Path
+                                identifier: Path
+                                spec:
+                                    shell: Bash
+                                    onDelegate: true
+                                    source:
+                                        type: Inline
+                                        spec:
+                                            script: |-
+                                                echo <+pipeline.stages.Canary.spec.serviceConfig.serviceDefinition.spec.manifests.values.spec.store.spec.paths>
+                                                echo <+pipeline.stages.Canary.spec.serviceConfig.output.manifestResults.manifest.store.paths>
+                                    environmentVariables: []
+                                    outputVariables: []
+                                    executionTarget: {}
+                                timeout: 10m
+                                when:
+                                    stageStatus: Failure
+                                failureStrategies: []
+                          - stepGroup:
+                                name: Primary Deployment
+                                identifier: primaryDepoyment
+                                steps:
+                                    - step:
+                                          name: Rolling Deployment
+                                          identifier: rollingDeployment
+                                          type: K8sRollingDeploy
+                                          timeout: 10m
+                                          spec:
+                                              skipDryRun: false
+                                rollbackSteps:
+                                    - step:
+                                          name: Rolling Rollback
+                                          identifier: rollingRollback
+                                          type: K8sRollingRollback
+                                          timeout: 10m
+                                          spec: {}
+                                when:
+                                    stageStatus: Failure
+                                failureStrategies: []
+                                spec: {}
+                      rollbackSteps: []
+                  serviceDependencies: []
+              tags: {}
+              failureStrategies:
+                  - onFailure:
+                        errors:
+                            - AllErrors
+                        action:
+                            type: StageRollback
+              variables: []
+    notificationRules:
+        - name: Example
+          pipelineEvents:
+              - type: AllEvents
+          notificationMethod:
+              type: Email
+              spec:
+                  userGroups:
+                      - Test
+                  recipients:
+                      - docs@harness.io
+          enabled: true

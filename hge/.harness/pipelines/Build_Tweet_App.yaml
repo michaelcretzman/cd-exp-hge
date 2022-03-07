@@ -25,7 +25,7 @@ pipeline:
                       steps:
                           - step:
                                 type: BuildAndPushDockerRegistry
-                                name: BnPnew
+                                name: BnPnewnew
                                 identifier: BnP
                                 spec:
                                     connectorRef: DockerHub_Builds

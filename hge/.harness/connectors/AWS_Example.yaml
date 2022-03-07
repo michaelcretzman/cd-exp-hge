@@ -1,0 +1,14 @@
+connector:
+  name: AWS Example
+  identifier: AWS_Example
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: Aws
+  spec:
+    credential:
+      type: ManualConfig
+      spec:
+        accessKey: 123
+        accessKeyRef: null
+        secretKeyRef: renu_bhaskaran

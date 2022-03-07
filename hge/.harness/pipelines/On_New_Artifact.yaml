@@ -1,0 +1,102 @@
+pipeline:
+    name: On New Artifact Vote
+    identifier: On_New_Artifact
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    stages:
+        - stage:
+              name: deploy
+              identifier: deploy
+              description: ""
+              type: Deployment
+              spec:
+                  serviceConfig:
+                      serviceRef: todo
+                      serviceDefinition:
+                          type: Kubernetes
+                          spec:
+                              variables: []
+                              manifests:
+                                  - manifest:
+                                        identifier: manifests
+                                        type: K8sManifest
+                                        spec:
+                                            store:
+                                                type: Github
+                                                spec:
+                                                    connectorRef: voteapp
+                                                    gitFetchType: Branch
+                                                    paths:
+                                                        - k8s-specifications
+                                                    branch: master
+                                            skipResourceVersioning: false
+                              artifacts:
+                                  primary:
+                                      type: DockerRegistry
+                                      spec:
+                                          connectorRef: DockerHub
+                                          imagePath: cretzman/voteapp
+                                          tag: <+input>
+                  infrastructure:
+                      environmentRef: test1
+                      infrastructureDefinition:
+                          type: KubernetesDirect
+                          spec:
+                              connectorRef: cddoc
+                              namespace: default
+                              releaseName: release-<+INFRA_KEY>
+                      allowSimultaneousDeployments: false
+                  execution:
+                      steps:
+                          - step:
+                                name: Rollout Deployment
+                                identifier: rolloutDeployment
+                                type: K8sRollingDeploy
+                                timeout: 10m
+                                spec:
+                                    skipDryRun: false
+                          - step:
+                                type: ShellScript
+                                name: info
+                                identifier: info
+                                spec:
+                                    shell: Bash
+                                    onDelegate: true
+                                    source:
+                                        type: Inline
+                                        spec:
+                                            script: |-
+                                                echo <+artifact.tag>
+
+                                                echo <+artifact.image>
+
+                                                echo <+artifact.imagePath>
+
+                                                echo <+artifact.type>
+
+                                                echo <+artifact.connectorRef>
+                                    environmentVariables: []
+                                    outputVariables: []
+                                    executionTarget: {}
+                                timeout: 10m
+                                failureStrategies:
+                                    - onFailure:
+                                          errors:
+                                              - AllErrors
+                                          action:
+                                              type: Ignore
+                      rollbackSteps:
+                          - step:
+                                name: Rollback Rollout Deployment
+                                identifier: rollbackRolloutDeployment
+                                type: K8sRollingRollback
+                                timeout: 10m
+                                spec: {}
+              tags: {}
+              failureStrategies:
+                  - onFailure:
+                        errors:
+                            - AllErrors
+                        action:
+                            type: StageRollback

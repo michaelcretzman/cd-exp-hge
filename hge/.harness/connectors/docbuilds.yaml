@@ -1,0 +1,12 @@
+connector:
+  name: doc-builds
+  identifier: docbuilds
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: K8sCluster
+  spec:
+    credential:
+      type: InheritFromDelegate
+    delegateSelectors:
+    - gcpdocplay

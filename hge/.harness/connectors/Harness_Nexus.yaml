@@ -1,0 +1,17 @@
+connector:
+  name: Harness Nexus
+  identifier: Harness_Nexus
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: HttpHelmRepo
+  spec:
+    helmRepoUrl: https://nexus3.dev.harness.io/repository/test-helm/
+    auth:
+      type: UsernamePassword
+      spec:
+        username: harnessadmin
+        usernameRef: null
+        passwordRef: Harness_Nexus
+    delegateSelectors:
+    - docplayground

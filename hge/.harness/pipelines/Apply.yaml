@@ -1,0 +1,98 @@
+pipeline:
+    name: Apply
+    identifier: Apply
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    stages:
+        - stage:
+              name: Apply
+              identifier: Apply
+              description: ""
+              type: Deployment
+              spec:
+                  serviceConfig:
+                      serviceDefinition:
+                          type: Kubernetes
+                          spec:
+                              artifacts:
+                                  sidecars: []
+                              variables: []
+                              manifestOverrideSets: []
+                              manifests:
+                                  - manifest:
+                                        identifier: manifests
+                                        type: K8sManifest
+                                        spec:
+                                            store:
+                                                type: Github
+                                                spec:
+                                                    connectorRef: harnessdocs
+                                                    gitFetchType: Branch
+                                                    paths:
+                                                        - default-k8s-manifests/Manifests/Files/templates/
+                                                    branch: main
+                                            skipResourceVersioning: false
+                                  - manifest:
+                                        identifier: values
+                                        type: Values
+                                        spec:
+                                            store:
+                                                type: Github
+                                                spec:
+                                                    connectorRef: harnessdocs
+                                                    gitFetchType: Branch
+                                                    paths:
+                                                        - default-k8s-manifests/Manifests/Files/ng-values.yaml
+                                                    branch: main
+                      serviceRef: two
+                  infrastructure:
+                      environmentRef: test1
+                      infrastructureDefinition:
+                          type: KubernetesDirect
+                          spec:
+                              connectorRef: <+input>
+                              namespace: <+input>
+                              releaseName: <+input>
+                      allowSimultaneousDeployments: false
+                      infrastructureKey: <+input>
+                  execution:
+                      steps:
+                          - step:
+                                type: K8sApply
+                                name: Apply
+                                identifier: Apply
+                                spec:
+                                    skipDryRun: false
+                                    skipSteadyStateCheck: false
+                                    filePaths:
+                                        - jobs/job.yaml
+                                timeout: 10m
+                          - step:
+                                type: ShellScript
+                                name: Apply Path
+                                identifier: Apply_Path
+                                spec:
+                                    shell: Bash
+                                    onDelegate: true
+                                    source:
+                                        type: Inline
+                                        spec:
+                                            script: |-
+                                                echo <+execution.steps.Apply.name>
+                                                echo <+execution.steps.Apply.spec.filePaths>
+                                                echo <+execution.steps.Apply.spec.skipDryRun>
+                                                echo <+execution.steps.Apply.spec.skipSteadyStateCheck>
+                                                echo <+execution.steps.Apply.timeout>
+                                    environmentVariables: []
+                                    outputVariables: []
+                                    executionTarget: {}
+                                timeout: 10m
+                      rollbackSteps: []
+              tags: {}
+              failureStrategies:
+                  - onFailure:
+                        errors:
+                            - AllErrors
+                        action:
+                            type: StageRollback

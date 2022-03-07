@@ -1,0 +1,12 @@
+connector:
+  name: GCP Example
+  identifier: GCP_Example
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: Gcp
+  spec:
+    credential:
+      type: InheritFromDelegate
+    delegateSelectors:
+    - docplayground

@@ -1,0 +1,12 @@
+connector:
+  name: Jira
+  identifier: Jira
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: Jira
+  spec:
+    jiraUrl: http://
+    username: john
+    usernameRef: null
+    passwordRef: harnessdocs_github_pw

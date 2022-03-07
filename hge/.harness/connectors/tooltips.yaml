@@ -1,0 +1,20 @@
+connector:
+  name: tooltips
+  identifier: tooltips
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: Github
+  spec:
+    url: https://github.com/wings-software/ng-tooltip.git
+    authentication:
+      type: Http
+      spec:
+        type: UsernamePassword
+        spec:
+          username: michaelcretzman
+          passwordRef: harnessdocs_github_pw
+    delegateSelectors:
+    - doc-cd-ng
+    executeOnDelegate: true
+    type: Repo

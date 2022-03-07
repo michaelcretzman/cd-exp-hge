@@ -1,0 +1,20 @@
+connector:
+  name: todolist
+  identifier: todolist
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: Github
+  spec:
+    url: https://github.com/michaelcretzman/todolist.git
+    authentication:
+      type: Http
+      spec:
+        type: UsernameToken
+        spec:
+          username: michaelcretzman
+          tokenRef: harnessdocs_github_pw
+    delegateSelectors:
+    - docplayground
+    executeOnDelegate: true
+    type: Repo

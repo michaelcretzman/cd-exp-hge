@@ -1,0 +1,29 @@
+inputSet:
+  identifier: "C"
+  pipeline:
+    identifier: "Build_Tweet_App"
+    properties:
+      ci:
+        codebase:
+          build:
+            type: "branch"
+            spec:
+              branch: "branch-c"
+    stages:
+    - stage:
+        identifier: "Build"
+        type: "CI"
+        spec:
+          execution:
+            steps:
+            - step:
+                identifier: "input_step"
+                type: "Run"
+                spec:
+                  connectorRef: "DockerHub_Builds"
+                  image: "maven:1.2.3"
+                  command: "echo C"
+                description: "C"
+  name: "C"
+  orgIdentifier: "default"
+  projectIdentifier: "CD_Examples"

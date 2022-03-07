@@ -1,0 +1,15 @@
+inputSet:
+  identifier: "example2"
+  name: "example2"
+  orgIdentifier: "default"
+  projectIdentifier: "CD_Examples"
+  pipeline:
+    identifier: "Canary"
+    stages:
+    - stage:
+        identifier: "Canary"
+        type: "Deployment"
+        variables:
+        - name: "foo"
+          type: "String"
+          value: "bar2"

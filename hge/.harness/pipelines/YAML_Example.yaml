@@ -1,0 +1,76 @@
+pipeline:
+    name: YAML Example
+    identifier: YAML_Example
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    description: my pipeline
+    timeout: 1h
+    stages:
+        - parallel:
+              - stage:
+                    identifier: one
+                    name: stage 1
+                    type: Deployment
+                    spec:
+                        execution:
+                            steps:
+                                - step:
+                                      type: K8sRollingDeploy
+                                      name: rolling deployment
+                                      identifier: rolling_deployment
+                                      spec:
+                                          skipDryRun: false
+                                      timeout: 10m
+                                - step:
+                                      identifier: ssh
+                                      name: shell script
+                                      type: ShellScript
+                                      spec:
+                                          shell: Bash
+                                          source:
+                                              type: Inline
+                                              spec:
+                                                  script: echo "hellow world!"
+                                          onDelegate: false
+                                          environmentVariables: []
+                                          outputVariables: []
+                                          executionTarget: {}
+                                      timeout: 10m
+                            rollbackSteps:
+                                - step:
+                                      type: K8sRollingRollback
+                                      name: rollback
+                                      identifier: rollback
+                                      spec:
+                                          skipDryRun: false
+                                      timeout: 10m
+                        infrastructure:
+                            infrastructureDefinition:
+                                type: KubernetesDirect
+                                spec:
+                                    connectorRef: <+input>
+                                    namespace: default
+                                    releaseName: release-<+INFRA_KEY>
+                            allowSimultaneousDeployments: false
+                            environmentRef: <+input>
+                        serviceConfig:
+                            serviceDefinition:
+                                type: Kubernetes
+                                spec:
+                                    manifests:
+                                        - manifest:
+                                              identifier: manifest
+                                              type: K8sManifest
+                                              spec:
+                                                  store:
+                                                      type: Github
+                                                      spec:
+                                                          connectorRef: <+input>
+                                                          gitFetchType: Branch
+                                                          paths:
+                                                              - path_to_manifest
+                                                          repoName: <+input>
+                                                          branch: <+input>
+                                    variables: []
+                            serviceRef: <+input>

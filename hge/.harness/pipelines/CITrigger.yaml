@@ -1,0 +1,162 @@
+pipeline:
+    name: CITrigger
+    identifier: CITrigger
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    properties:
+        ci:
+            codebase:
+                connectorRef: CI_Quickstart
+                build: <+input>
+    stages:
+        - stage:
+              name: Build Test and Push
+              identifier: Build_Test_and_Push
+              type: CI
+              spec:
+                  cloneCodebase: true
+                  execution:
+                      steps:
+                          - step:
+                                type: Run
+                                name: expressions
+                                identifier: expressions
+                                spec:
+                                    connectorRef: DockerHub
+                                    image: curlimages/curl:7.79.1
+                                    command: |-
+                                        echo <+codebase.branch>
+                                        echo <+codebase.repoUrl>
+                                    privileged: false
+                                failureStrategies:
+                                    - onFailure:
+                                          errors:
+                                              - AllErrors
+                                          action:
+                                              type: ManualIntervention
+                                              spec:
+                                                  timeout: 10m
+                                                  onTimeout:
+                                                      action:
+                                                          type: Abort
+                          - step:
+                                type: Run
+                                name: Run Unit Tests
+                                identifier: Run_Unit_Tests
+                                spec:
+                                    connectorRef: DockerHub
+                                    image: golang:1.17.2
+                                    command: |-
+                                        go get gotest.tools/gotestsum
+                                        gotestsum --format=standard-verbose --junitfile unit-tests.xml || true
+                                        CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo
+                                    privileged: false
+                                    reports:
+                                        type: JUnit
+                                        spec:
+                                            paths:
+                                                - "*.xml"
+                                when:
+                                    stageStatus: Success
+                                failureStrategies:
+                                    - onFailure:
+                                          errors:
+                                              - AllErrors
+                                          action:
+                                              type: Ignore
+                          - step:
+                                type: BuildAndPushDockerRegistry
+                                name: Build and Push
+                                identifier: Build_and_Push
+                                spec:
+                                    connectorRef: DockerHub
+                                    repo: cretzman/ciquickstart
+                                    tags:
+                                        - <+pipeline.sequenceId>
+                                    optimize: true
+                          - step:
+                                type: Run
+                                name: echo expressions
+                                identifier: echo_expressions
+                                spec:
+                                    connectorRef: DockerHub
+                                    image: curlimages/curl:7.79.1
+                                    command: |-
+                                        echo "Manual execution"
+
+                                        <+codebase.branch>
+                                        <+codebase.tag>
+                                        <+codebase.commitSha>
+
+                                        echo "Pull request Webhook Execution"
+
+                                        <+codebase.branch>
+                                        <+codebase.tag>
+                                        <+codebase.commitSha>
+                                        <+codebase.targetBranch>
+                                        <+codebase.sourceBranch>
+                                        <+codebase.prNumber>
+                                        <+codebase.prTitle>
+                                        <+codebase.commitSha>
+                                        <+codebase.baseCommitSha>
+                                        <+codebase.commitRef>
+                                        <+codebase.repoUrl>
+                                        <+codebase.gitUserId>
+                                        <+codebase.gitUserEmail>
+                                        <+codebase.gitUser>
+                                        <+codebase.gitUserAvatar>
+                                        <+codebase.pullRequestLink>
+                                        <+codebase.pullRequestBody>
+                                        <+codebase.state>
+                                        <+codebase.event>
+                                    privileged: false
+                                failureStrategies:
+                                    - onFailure:
+                                          errors:
+                                              - AllErrors
+                                          action:
+                                              type: Ignore
+                  infrastructure:
+                      type: KubernetesDirect
+                      spec:
+                          connectorRef: cddoc
+                          namespace: default
+                  sharedPaths:
+                      - ""
+              variables: []
+        - stage:
+              name: Run Integration Test
+              identifier: Run_Integration_Test
+              type: CI
+              spec:
+                  cloneCodebase: false
+                  execution:
+                      steps:
+                          - step:
+                                type: Run
+                                name: test connection to server
+                                identifier: test_connection_to_server
+                                spec:
+                                    connectorRef: DockerHub
+                                    image: curlimages/curl:7.73.0
+                                    command: |-
+                                        sleep 10
+                                        curl localhost:8080
+                                        curl localhost:8080?Hello!_I_am_a_nice_demo!
+                                    privileged: false
+                  infrastructure:
+                      useFromStage: Build_Test_and_Push
+                  serviceDependencies:
+                      - identifier: runhelloworldserver
+                        name: run-hello-world-server
+                        type: Service
+                        spec:
+                            connectorRef: DockerHub
+                            image: cretzman/ciquickstart:<+pipeline.sequenceId>
+                  sharedPaths:
+                      - ""
+              variables: []
+              when:
+                  pipelineStatus: Success
+                  condition: <+pipeline.name> == foo

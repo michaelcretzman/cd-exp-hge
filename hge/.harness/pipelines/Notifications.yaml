@@ -1,0 +1,258 @@
+pipeline:
+    name: Notifications
+    identifier: Notifications
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    stages:
+        - stage:
+              name: Deploy QA
+              identifier: deploy
+              description: ""
+              type: Deployment
+              spec:
+                  serviceConfig:
+                      serviceDefinition:
+                          type: Kubernetes
+                          spec:
+                              manifestOverrideSets: []
+                              manifests:
+                                  - manifest:
+                                        identifier: default
+                                        type: K8sManifest
+                                        spec:
+                                            store:
+                                                type: Github
+                                                spec:
+                                                    connectorRef: harnessdocs
+                                                    gitFetchType: Branch
+                                                    paths:
+                                                        - Manifests/Files/templates
+                                                    branch: master
+                                            skipResourceVersioning: false
+                                  - manifest:
+                                        identifier: values
+                                        type: Values
+                                        spec:
+                                            store:
+                                                type: Github
+                                                spec:
+                                                    connectorRef: harnessdocs
+                                                    gitFetchType: Branch
+                                                    paths:
+                                                        - Manifests/Files/values.yaml
+                                                    branch: master
+                              artifacts:
+                                  sidecars: []
+                              variables: []
+                      serviceRef: <+input>
+                  infrastructure:
+                      environmentRef: helmchart
+                      infrastructureDefinition:
+                          type: KubernetesDirect
+                          spec:
+                              connectorRef: cddoc
+                              namespace: default
+                              releaseName: docs
+                      allowSimultaneousDeployments: false
+                      infrastructureKey: ""
+                  execution:
+                      steps:
+                          - step:
+                                name: Rollout Deployment
+                                identifier: rolloutDeployment
+                                type: K8sRollingDeploy
+                                timeout: 10m
+                                spec:
+                                    skipDryRun: false
+                          - parallel:
+                                - step:
+                                      type: ShellScript
+                                      name: foo
+                                      identifier: foo
+                                      spec:
+                                          shell: Bash
+                                          onDelegate: true
+                                          source:
+                                              type: Inline
+                                              spec:
+                                                  script: name=123
+                                          environmentVariables: []
+                                          outputVariables:
+                                              - name: example
+                                                type: String
+                                                value: "4321"
+                                          executionTarget: {}
+                                          delegateSelectors:
+                                              - doc-cd-ng
+                                      timeout: 10m
+                                      failureStrategies: []
+                                - step:
+                                      type: Http
+                                      name: HTTP
+                                      identifier: HTTP
+                                      spec:
+                                          url: http://foo.com
+                                          method: GET
+                                          headers: []
+                                          outputVariables: []
+                                      timeout: 10s
+                                      failureStrategies: []
+                          - stepGroup:
+                                name: Simulate Load
+                                identifier: Simulate_Load
+                                steps:
+                                    - parallel:
+                                          - step:
+                                                type: Http
+                                                name: Load 1
+                                                identifier: Load_1
+                                                spec:
+                                                    url: http://example.com
+                                                    method: GET
+                                                    headers: []
+                                                    outputVariables: []
+                                                timeout: 10s
+                                          - step:
+                                                type: Http
+                                                name: Load 2
+                                                identifier: Load_2
+                                                spec:
+                                                    url: http://example.com
+                                                    method: GET
+                                                    headers: []
+                                                    outputVariables: []
+                                                timeout: 10s
+                                          - step:
+                                                type: Http
+                                                name: Load 3
+                                                identifier: Load_3
+                                                spec:
+                                                    url: http://example.com
+                                                    method: GET
+                                                    headers: []
+                                                    outputVariables: []
+                                                timeout: 10s
+                                failureStrategies: []
+                                spec: {}
+                      rollbackSteps:
+                          - step:
+                                name: Rollback Rollout Deployment
+                                identifier: rollbackRolloutDeployment
+                                type: K8sRollingRollback
+                                timeout: 10m
+                                spec: {}
+                  serviceDependencies: []
+              tags: {}
+              failureStrategies:
+                  - onFailure:
+                        errors:
+                            - AllErrors
+                        action:
+                            type: StageRollback
+              variables:
+                  - name: name
+                    type: String
+                    value: nginx
+        - stage:
+              name: Jira Approval
+              identifier: Jira_Stage
+              description: ""
+              type: Approval
+              spec:
+                  execution:
+                      steps:
+                          - step:
+                                name: Jira Create
+                                identifier: jiraCreate
+                                type: JiraCreate
+                                timeout: 5m
+                                spec:
+                                    connectorRef: Jira_Doc_Example
+                                    projectKey: DOC
+                                    issueType: Test
+                                    fields:
+                                        - name: Summary
+                                          value: Jira Create Example
+                                        - name: Description
+                                          value: Does it work?
+                          - step:
+                                type: JiraApproval
+                                name: Jira Approval
+                                identifier: Jira_Approval
+                                spec:
+                                    connectorRef: Jira_Doc_Example
+                                    projectKey: DOC
+                                    issueType: Test
+                                    approvalCriteria:
+                                        type: KeyValues
+                                        spec:
+                                            matchAnyCondition: false
+                                            conditions:
+                                                - key: Status
+                                                  operator: equals
+                                                  value: Under Review
+                                            expression: <+issue.Status> == "Done"
+                                    rejectionCriteria:
+                                        type: KeyValues
+                                        spec:
+                                            matchAnyCondition: true
+                                            conditions: []
+                                    issueKey: <+pipeline.stages.Jira_Stage.spec.execution.steps.jiraCreate.issue.key>
+                                timeout: 1d
+                          - step:
+                                type: JiraUpdate
+                                name: Jira Update
+                                identifier: Jira_Update
+                                spec:
+                                    connectorRef: Jira_Doc_Example
+                                    issueKey: <+pipeline.stages.Jira_Stage.spec.execution.steps.jiraCreate.issue.key>
+                                    transitionTo:
+                                        transitionName: ""
+                                        status: Done
+                                    fields:
+                                        - name: Comment
+                                          value: testing update step
+                                timeout: 1d
+                  serviceConfig:
+                      serviceRef: ""
+                      serviceDefinition:
+                          type: Kubernetes
+                          spec:
+                              variables: []
+              tags: {}
+              variables: []
+              when:
+                  pipelineStatus: Success
+    notificationRules:
+        - name: PagerDuty
+          pipelineEvents:
+              - type: AllEvents
+          notificationMethod:
+              type: PagerDuty
+              spec:
+                  userGroups: []
+                  integrationKey: edsdsdfESdw
+          enabled: true
+        - name: Slack
+          pipelineEvents:
+              - type: AllEvents
+          notificationMethod:
+              type: Slack
+              spec:
+                  userGroups: []
+                  webhookUrl: https://foo
+          enabled: true
+        - name: Email
+          pipelineEvents:
+              - type: PipelineStart
+              - type: PipelineSuccess
+              - type: PipelineFailed
+          notificationMethod:
+              type: Email
+              spec:
+                  userGroups: []
+                  recipients:
+                      - docs@harness.io
+                      - michael.cretzman@harness.io
+          enabled: true

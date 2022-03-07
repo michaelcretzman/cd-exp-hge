@@ -1,0 +1,55 @@
+pipeline:
+    name: YAML Demo
+    identifier: YAML_Demo
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    stages:
+        - stage:
+              identifier: yamlstage
+              name: yamlstage
+              type: Deployment
+              spec:
+                  execution:
+                      steps:
+                          - step:
+                                identifier: newssh
+                                name: newssh
+                                type: ShellScript
+                                spec:
+                                    shell: Bash
+                                    source:
+                                        type: Inline
+                                        spec:
+                                            script: echo "hello YAML"
+                                    onDelegate: false
+                  infrastructure:
+                      environment:
+                          identifier: newenv
+                          name: newenv
+                          type: PreProduction
+                      infrastructureDefinition:
+                          type: KubernetesDirect
+                          spec:
+                              connectorRef: <+input>
+                              namespace: <+input>
+                              releaseName: <+input>
+                  serviceConfig:
+                      service:
+                          identifier: newservice
+                          name: newservice
+                      serviceDefinition:
+                          type: Kubernetes
+                          spec:
+                              manifests:
+                                  - manifest:
+                                        identifier: yamlex
+                                        type: K8sManifest
+                                        spec:
+                                            store:
+                                                type: Github
+                                                spec:
+                                                    branch: <+input>
+                                                    connectorRef: <+input>
+                                                    paths: <+input>
+                                                    gitFetchType: Branch

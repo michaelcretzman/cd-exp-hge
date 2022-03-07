@@ -1,0 +1,63 @@
+pipeline:
+    name: variables
+    identifier: variables
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    stages:
+        - stage:
+              name: vars
+              identifier: vars
+              description: ""
+              type: Deployment
+              spec:
+                  serviceConfig:
+                      serviceRef: vars
+                      serviceDefinition:
+                          type: Kubernetes
+                          spec:
+                              variables:
+                                  - name: foo
+                                    type: String
+                                    value: foo
+                  infrastructure:
+                      environmentRef: vars
+                      infrastructureDefinition:
+                          type: KubernetesDirect
+                          spec:
+                              connectorRef: cddoc
+                              namespace: default
+                              releaseName: release-<+INFRA_KEY>
+                      allowSimultaneousDeployments: false
+                  execution:
+                      steps:
+                          - step:
+                                type: ShellScript
+                                name: override
+                                identifier: override
+                                spec:
+                                    shell: Bash
+                                    onDelegate: true
+                                    source:
+                                        type: Inline
+                                        spec:
+                                            script: |-
+                                                echo <+serviceVariables.foo>
+
+                                                echo <+serviceConfig.serviceDefinition.spec.variables.foo>
+
+                                                <+serviceVariables.foo> == "bar"
+
+                                                echo <+serviceVariables.foo>
+                                    environmentVariables: []
+                                    outputVariables: []
+                                    executionTarget: {}
+                                timeout: 10m
+                      rollbackSteps: []
+              tags: {}
+              failureStrategies:
+                  - onFailure:
+                        errors:
+                            - AllErrors
+                        action:
+                            type: StageRollback

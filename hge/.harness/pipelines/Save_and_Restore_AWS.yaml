@@ -1,0 +1,96 @@
+pipeline:
+    name: Save and Restore AWS
+    identifier: Save_and_Restore_AWS
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    stages:
+        - stage:
+              identifier: s3_save_cache
+              name: s3_save_cache
+              type: CI
+              variables:
+                  - name: AWS_ACCESS_KEY
+                    type: String
+                    value: <+input>
+                  - name: AWS_SECRET_KEY
+                    type: Secret
+                    value: <+input>
+              spec:
+                  sharedPaths:
+                      - /shared
+                  execution:
+                      steps:
+                          - step:
+                                identifier: createBucket
+                                name: create bucket
+                                type: Run
+                                spec:
+                                    command: |
+                                        aws configure set aws_access_key_id $AWS_ACCESS_KEY
+                                        aws configure set aws_secret_access_key $AWS_SECRET_KEY
+                                        aws configure set default.region us-west-2
+                                        aws s3 rb s3://harnesscie-cache-tar --force || true
+                                        aws s3 mb s3://harnesscie-cache-tar
+                                    envVariables:
+                                        HOME: /shared
+                                    connectorRef: <+input>
+                                    image: amazon/aws-cli:2.0.6
+                          - step:
+                                identifier: rootFile
+                                name: create file at slash
+                                type: Run
+                                spec:
+                                    command: |
+                                        echo hello world > /shared/cache
+                                    connectorRef: <+input>
+                                    image: alpine
+                          - step:
+                                identifier: saveCacheTar
+                                name: save cache
+                                type: SaveCacheS3
+                                spec:
+                                    region: us-west-2
+                                    connectorRef: <+input>
+                                    bucket: harnesscie-cache-tar
+                                    sourcePaths:
+                                        - src/main/resources
+                                        - /shared/cache
+                                    key: cache-tar
+                                    archiveFormat: Tar
+                  infrastructure:
+                      type: KubernetesDirect
+                      spec:
+                          connectorRef: <+input>
+                          namespace: default
+                  cloneCodebase: true
+        - stage:
+              identifier: s3_restore_cache
+              name: s3 restore cache
+              type: CI
+              variables:
+                  - name: AWS_ACCESS_KEY
+                    type: String
+                    value: <+input>
+                  - name: AWS_SECRET_KEY
+                    type: Secret
+                    value: <+input>
+              spec:
+                  sharedPaths:
+                      - /shared
+                  execution:
+                      steps:
+                          - step:
+                                identifier: restoreCacheTar
+                                name: restore
+                                type: RestoreCacheS3
+                                spec:
+                                    region: us-west-2
+                                    connectorRef: <+input>
+                                    bucket: harnesscie-cache-tar
+                                    key: cache-tar
+                                    failIfKeyNotFound: true
+                                    archiveFormat: Tar
+                  infrastructure:
+                      useFromStage: s3_save_cache
+                  cloneCodebase: false

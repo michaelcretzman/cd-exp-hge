@@ -1,0 +1,20 @@
+connector:
+  name: sally
+  identifier: sally
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: Github
+  spec:
+    url: https://github.com/uber-go/sally
+    authentication:
+      type: Http
+      spec:
+        type: UsernameToken
+        spec:
+          username: michaelcretzman
+          tokenRef: harnessdocs_github_pw
+    delegateSelectors:
+    - doc-cluster-builds
+    executeOnDelegate: true
+    type: Repo

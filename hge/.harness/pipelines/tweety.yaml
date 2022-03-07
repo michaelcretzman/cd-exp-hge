@@ -1,0 +1,35 @@
+pipeline:
+    name: tweety
+    identifier: tweety
+    allowStageExecutions: false
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    properties:
+        ci:
+            codebase:
+                connectorRef: tweetapp
+                build: <+input>
+    stages:
+        - stage:
+              name: build
+              identifier: build
+              type: CI
+              spec:
+                  cloneCodebase: true
+                  infrastructure:
+                      type: KubernetesDirect
+                      spec:
+                          connectorRef: docbuilds
+                          namespace: default
+                  execution:
+                      steps:
+                          - step:
+                                type: BuildAndPushDockerRegistry
+                                name: Build and Push
+                                identifier: Build_and_Push
+                                spec:
+                                    connectorRef: DockerHub_Builds
+                                    repo: cretzman/tweetapp
+                                    tags:
+                                        - <+pipeline.sequenceId>

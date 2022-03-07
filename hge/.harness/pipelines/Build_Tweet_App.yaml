@@ -1,0 +1,43 @@
+pipeline:
+    name: Build Tweet App
+    identifier: Build_Tweet_App
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    properties:
+        ci:
+            codebase:
+                connectorRef: tweetapp
+                build: <+input>
+    stages:
+        - stage:
+              name: expression
+              identifier: expression
+              type: CI
+              spec:
+                  cloneCodebase: true
+                  infrastructure:
+                      type: KubernetesDirect
+                      spec:
+                          connectorRef: docbuilds
+                          namespace: default
+                  execution:
+                      steps:
+                          - step:
+                                type: BuildAndPushDockerRegistry
+                                name: BnP
+                                identifier: BnP
+                                spec:
+                                    connectorRef: DockerHub_Builds
+                                    repo: cretzman/tweetapp
+                                    tags:
+                                        - <+pipeline.sequenceId>
+                          - step:
+                                type: Run
+                                name: echo
+                                identifier: echo
+                                spec:
+                                    connectorRef: DockerHub_Builds
+                                    image: curlimages/curl:7.80.0
+                                    command: echo <+codebase.commitSha>
+    variables: []

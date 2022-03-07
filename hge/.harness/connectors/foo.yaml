@@ -1,0 +1,16 @@
+connector:
+  name: foo
+  identifier: foo
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: Git
+  spec:
+    url: https://foo
+    executeOnDelegate: true
+    type: Http
+    connectionType: Repo
+    spec:
+      username: foo
+      usernameRef: null
+      passwordRef: michaelcretzman_github_pat

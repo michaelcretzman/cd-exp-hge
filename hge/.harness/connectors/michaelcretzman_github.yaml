@@ -1,0 +1,18 @@
+connector:
+  name: michaelcretzman_github
+  identifier: michaelcretzman_github
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: Github
+  spec:
+    url: https://github.com/keen-software/goHelloWorldServer.git
+    authentication:
+      type: Http
+      spec:
+        type: UsernameToken
+        spec:
+          username: michaelcretzman
+          tokenRef: michaelcretzmangithub
+    executeOnDelegate: false
+    type: Repo

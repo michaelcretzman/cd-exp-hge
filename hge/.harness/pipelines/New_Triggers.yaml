@@ -1,0 +1,36 @@
+pipeline:
+    name: New Triggers
+    identifier: New_Triggers
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    properties:
+        ci:
+            codebase:
+                connectorRef: CI_Quickstart
+                build: <+input>
+    stages:
+        - stage:
+              name: exp
+              identifier: exp
+              description: ""
+              type: CI
+              spec:
+                  cloneCodebase: true
+                  infrastructure:
+                      type: KubernetesDirect
+                      spec:
+                          connectorRef: cddoc
+                          namespace: default
+                  execution:
+                      steps:
+                          - step:
+                                type: Run
+                                name: exp
+                                identifier: exp
+                                spec:
+                                    connectorRef: DockerHub
+                                    image: curlimages/curl:7.80.0
+                                    command: echo <+codebase.repoUrl>
+                                    privileged: false
+              variables: []

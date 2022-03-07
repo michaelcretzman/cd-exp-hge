@@ -1,0 +1,226 @@
+pipeline:
+    name: Traffic Splitting Canary
+    identifier: Traffic_Splitting_Canary
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    stages:
+        - stage:
+              name: Canary
+              identifier: Canary
+              description: ""
+              type: Deployment
+              spec:
+                  serviceConfig:
+                      serviceRef: nginx
+                      serviceDefinition:
+                          type: Kubernetes
+                          spec:
+                              variables: []
+                              manifests:
+                                  - manifest:
+                                        identifier: values
+                                        type: Values
+                                        spec:
+                                            store:
+                                                type: Github
+                                                spec:
+                                                    connectorRef: harnessdocs
+                                                    gitFetchType: Branch
+                                                    paths:
+                                                        - traffic-splitting-canary/values.yaml
+                                                    branch: main
+                                  - manifest:
+                                        identifier: manifests
+                                        type: K8sManifest
+                                        spec:
+                                            store:
+                                                type: Github
+                                                spec:
+                                                    connectorRef: harnessdocs
+                                                    gitFetchType: Branch
+                                                    paths:
+                                                        - traffic-splitting-canary
+                                                    branch: main
+                                            skipResourceVersioning: false
+                  infrastructure:
+                      environmentRef: test1
+                      infrastructureDefinition:
+                          type: KubernetesDirect
+                          spec:
+                              connectorRef: cddoc
+                              namespace: default
+                              releaseName: release-<+INFRA_KEY>
+                      allowSimultaneousDeployments: false
+                  execution:
+                      steps:
+                          - step:
+                                type: K8sApply
+                                name: Zero Percent
+                                identifier: Zero_Percent
+                                spec:
+                                    filePaths:
+                                        - ingress-traffic-split0.yaml
+                                    skipDryRun: false
+                                    skipSteadyStateCheck: false
+                                timeout: 10m
+                          - stepGroup:
+                                name: Canary Deployment
+                                identifier: canaryDepoyment
+                                steps:
+                                    - step:
+                                          name: Canary Deployment
+                                          identifier: canaryDeployment
+                                          type: K8sCanaryDeploy
+                                          timeout: 10m
+                                          spec:
+                                              instanceSelection:
+                                                  type: Count
+                                                  spec:
+                                                      count: 1
+                                              skipDryRun: false
+                                rollbackSteps:
+                                    - step:
+                                          name: Canary Delete
+                                          identifier: rollbackCanaryDelete
+                                          type: K8sCanaryDelete
+                                          timeout: 10m
+                                          spec: {}
+                          - step:
+                                type: K8sApply
+                                name: Twenty Five Percent
+                                identifier: Twenty_Five_Percent
+                                spec:
+                                    filePaths:
+                                        - ingress-traffic-split25.yaml
+                                    skipDryRun: false
+                                    skipSteadyStateCheck: false
+                                timeout: 10m
+                          - step:
+                                type: HarnessApproval
+                                name: Approve 25
+                                identifier: Approve_25
+                                spec:
+                                    approvalMessage: Please review the following information and approve the pipeline progression
+                                    includePipelineExecutionHistory: true
+                                    approvers:
+                                        userGroups:
+                                            - Test
+                                        minimumCount: 1
+                                        disallowPipelineExecutor: false
+                                    approverInputs: []
+                                timeout: 1d
+                          - step:
+                                type: K8sApply
+                                name: Fifty Percent
+                                identifier: Fifty_Percent
+                                spec:
+                                    filePaths:
+                                        - ingress-traffic-split50.yaml
+                                    skipDryRun: false
+                                    skipSteadyStateCheck: false
+                                timeout: 10m
+                          - step:
+                                type: HarnessApproval
+                                name: Approve 50
+                                identifier: Approve_50
+                                spec:
+                                    approvalMessage: Please review the following information and approve the pipeline progression
+                                    includePipelineExecutionHistory: true
+                                    approvers:
+                                        userGroups:
+                                            - Test
+                                        minimumCount: 1
+                                        disallowPipelineExecutor: false
+                                    approverInputs: []
+                                timeout: 1d
+                          - step:
+                                type: ShellScript
+                                name: curl endpoint 10 times
+                                identifier: curl_endpoint_10_times
+                                spec:
+                                    shell: Bash
+                                    onDelegate: true
+                                    source:
+                                        type: Inline
+                                        spec:
+                                            script: for ((i=0;i<10;i++)); do curl --connect-timeout 3 "http://35.226.154.183"; done
+                                    environmentVariables: []
+                                    outputVariables: []
+                                    executionTarget: {}
+                                timeout: 10m
+                          - stepGroup:
+                                name: Primary Deployment
+                                identifier: primaryDepoyment
+                                steps:
+                                    - step:
+                                          name: Rolling Deployment
+                                          identifier: rollingDeployment
+                                          type: K8sRollingDeploy
+                                          timeout: 10m
+                                          spec:
+                                              skipDryRun: false
+                                rollbackSteps:
+                                    - step:
+                                          name: Rolling Rollback
+                                          identifier: rollingRollback
+                                          type: K8sRollingRollback
+                                          timeout: 10m
+                                          spec: {}
+                          - step:
+                                type: HarnessApproval
+                                name: Approve 0
+                                identifier: Approve_0
+                                spec:
+                                    approvalMessage: Please review the following information and approve the pipeline progression
+                                    includePipelineExecutionHistory: true
+                                    approvers:
+                                        userGroups:
+                                            - Test
+                                        minimumCount: 1
+                                        disallowPipelineExecutor: false
+                                    approverInputs: []
+                                timeout: 1d
+                          - step:
+                                type: K8sApply
+                                name: Canary Zero Percent
+                                identifier: Canary_Zero_Percent
+                                spec:
+                                    filePaths:
+                                        - ingress-traffic-split0.yaml
+                                    skipDryRun: false
+                                    skipSteadyStateCheck: false
+                                timeout: 10m
+                                when:
+                                    stageStatus: Success
+                                failureStrategies: []
+                          - step:
+                                type: ShellScript
+                                name: curl Canary endpoint 10 times
+                                identifier: curl_Canary_endpoint_10_times
+                                spec:
+                                    shell: Bash
+                                    onDelegate: true
+                                    source:
+                                        type: Inline
+                                        spec:
+                                            script: for ((i=0;i<10;i++)); do curl --connect-timeout 3 "http://35.226.154.183"; done
+                                    environmentVariables: []
+                                    outputVariables: []
+                                    executionTarget: {}
+                                timeout: 10m
+                          - step:
+                                name: Canary Delete
+                                identifier: canaryDelete
+                                type: K8sCanaryDelete
+                                timeout: 10m
+                                spec: {}
+                      rollbackSteps: []
+                  serviceDependencies: []
+              tags: {}
+              failureStrategies:
+                  - onFailure:
+                        errors:
+                            - AllErrors
+                        action:
+                            type: Ignore

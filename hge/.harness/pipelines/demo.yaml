@@ -1,0 +1,53 @@
+pipeline:
+    name: demo
+    identifier: demo
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    stages:
+        - stage:
+              name: demo
+              identifier: demo
+              description: ""
+              type: Deployment
+              spec:
+                  serviceConfig:
+                      serviceRef: <+input>
+                      serviceDefinition:
+                          type: Kubernetes
+                          spec:
+                              variables: []
+                  infrastructure:
+                      environmentRef: <+input>
+                      infrastructureDefinition:
+                          type: KubernetesDirect
+                          spec:
+                              connectorRef: <+input>
+                              namespace: <+input>
+                              releaseName: release-<+INFRA_KEY>
+                      allowSimultaneousDeployments: false
+                  execution:
+                      steps:
+                          - step:
+                                type: ShellScript
+                                name: shell
+                                identifier: shell
+                                spec:
+                                    shell: Bash
+                                    onDelegate: true
+                                    source:
+                                        type: Inline
+                                        spec:
+                                            script: echo "hello world!"
+                                    environmentVariables: []
+                                    outputVariables: []
+                                    executionTarget: {}
+                                timeout: 10m
+                      rollbackSteps: []
+              tags: {}
+              failureStrategies:
+                  - onFailure:
+                        errors:
+                            - AllErrors
+                        action:
+                            type: StageRollback

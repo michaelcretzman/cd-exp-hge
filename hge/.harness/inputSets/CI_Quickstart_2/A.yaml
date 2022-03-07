@@ -1,0 +1,14 @@
+inputSet:
+  identifier: "A"
+  name: "A"
+  orgIdentifier: "default"
+  projectIdentifier: "CD_Examples"
+  pipeline:
+    identifier: "CI_Quickstart_2"
+    properties:
+      ci:
+        codebase:
+          build:
+            type: "branch"
+            spec:
+              branch: "main"

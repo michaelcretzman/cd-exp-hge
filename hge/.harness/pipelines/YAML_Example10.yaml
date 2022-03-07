@@ -1,0 +1,83 @@
+pipeline:
+    name: YAML Sample
+    identifier: YAML_Example10
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    stages:
+        - stage:
+              identifier: newstage
+              name: cd_stage
+              type: Deployment
+              spec:
+                  execution:
+                      steps:
+                          - step:
+                                type: K8sRollingDeploy
+                                name: rolling deploy
+                                identifier: rolling_deploy
+                                spec:
+                                    skipDryRun: false
+                                timeout: 10m
+                          - step:
+                                identifier: myshh
+                                name: shell script
+                                type: ShellScript
+                                spec:
+                                    onDelegate: false
+                                    shell: Bash
+                                    source:
+                                        type: Inline
+                                        spec:
+                                            script: echo "hello world"
+                                    environmentVariables: []
+                                    outputVariables: []
+                                    executionTarget: {}
+                                timeout: 10m
+                      rollbackSteps:
+                          - step:
+                                type: K8sRollingRollback
+                                name: rolling rollback
+                                identifier: rolling_rollback
+                                spec:
+                                    skipDryRun: false
+                                timeout: 10m
+                  infrastructure:
+                      infrastructureDefinition:
+                          type: KubernetesDirect
+                          spec:
+                              connectorRef: <+input>
+                              namespace: <+input>
+                              releaseName: <+input>
+                      environmentRef: <+input>
+                      allowSimultaneousDeployments: false
+                  serviceConfig:
+                      serviceDefinition:
+                          type: Kubernetes
+                          spec:
+                              manifests:
+                                  - manifest:
+                                        identifier: manifests
+                                        type: Values
+                                        spec:
+                                            store:
+                                                type: Github
+                                                spec:
+                                                    connectorRef: <+input>
+                                                    gitFetchType: Branch
+                                                    paths:
+                                                        - path
+                                                    repoName: <+input>
+                                                    branch: <+input>
+                              artifacts:
+                                  primary:
+                                      type: DockerRegistry
+                                      spec:
+                                          connectorRef: <+input>
+                                          imagePath: <+input>
+                                          tag: <+input>
+                              variables: []
+                      serviceRef: <+input>
+                  serviceDependencies: []
+              tags: {}
+    timeout: <+input>

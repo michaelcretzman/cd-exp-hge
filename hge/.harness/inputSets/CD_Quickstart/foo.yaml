@@ -1,0 +1,14 @@
+inputSet:
+  identifier: "foo"
+  name: "foo"
+  orgIdentifier: "default"
+  projectIdentifier: "CD_Examples"
+  pipeline:
+    identifier: "CD_Quickstart"
+    stages:
+    - stage:
+        identifier: "Deploy_Service"
+        type: "Deployment"
+        spec:
+          serviceConfig:
+            serviceRef: "nginx"

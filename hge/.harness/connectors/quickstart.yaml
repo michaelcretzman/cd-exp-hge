@@ -1,0 +1,18 @@
+connector:
+  name: quickstart
+  identifier: quickstart
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: Github
+  spec:
+    url: https://github.com/kubernetes/website
+    authentication:
+      type: Http
+      spec:
+        type: UsernameToken
+        spec:
+          username: michaelcretzman
+          tokenRef: harnessdocs_github_pw
+    executeOnDelegate: false
+    type: Repo

@@ -1,0 +1,12 @@
+connector:
+  name: Kubernetes Quickstart
+  identifier: Kubernetes_Quickstart
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: K8sCluster
+  spec:
+    credential:
+      type: InheritFromDelegate
+    delegateSelectors:
+    - gcpdocplay

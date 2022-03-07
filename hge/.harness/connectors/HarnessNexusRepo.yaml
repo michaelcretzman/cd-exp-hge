@@ -1,0 +1,18 @@
+connector:
+  name: HarnessNexusRepo
+  identifier: HarnessNexusRepo
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: Nexus
+  spec:
+    nexusServerUrl: https://nexus3.dev.harness.io
+    version: 3.x
+    auth:
+      type: UsernamePassword
+      spec:
+        username: harnessadmin
+        usernameRef: null
+        passwordRef: Harness_Nexus
+    delegateSelectors:
+    - docplayground

@@ -1,0 +1,253 @@
+pipeline:
+    name: Traffic Splitting BG
+    identifier: Traffic_Splitting
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    stages:
+        - stage:
+              name: Nginx Traffic Shift
+              identifier: Nginx_Traffic_Shift
+              description: ""
+              type: Deployment
+              spec:
+                  serviceConfig:
+                      serviceRef: nginx
+                      serviceDefinition:
+                          type: Kubernetes
+                          spec:
+                              variables: []
+                              manifests:
+                                  - manifest:
+                                        identifier: values
+                                        type: Values
+                                        spec:
+                                            store:
+                                                type: Github
+                                                spec:
+                                                    connectorRef: harnessdocs
+                                                    gitFetchType: Branch
+                                                    paths:
+                                                        - traffic-splitting-bg/values.yaml
+                                                    branch: main
+                                  - manifest:
+                                        identifier: manifests
+                                        type: K8sManifest
+                                        spec:
+                                            store:
+                                                type: Github
+                                                spec:
+                                                    connectorRef: harnessdocs
+                                                    gitFetchType: Branch
+                                                    paths:
+                                                        - traffic-splitting-bg
+                                                    branch: main
+                                            skipResourceVersioning: false
+                  infrastructure:
+                      environmentRef: helmchart
+                      infrastructureDefinition:
+                          type: KubernetesDirect
+                          spec:
+                              connectorRef: cddoc
+                              namespace: default
+                              releaseName: release-<+INFRA_KEY>
+                      allowSimultaneousDeployments: false
+                  execution:
+                      steps:
+                          - step:
+                                type: ShellScript
+                                name: curl stage svc endpoint
+                                identifier: curl_stage_svc_endpoint
+                                spec:
+                                    shell: Bash
+                                    onDelegate: true
+                                    source:
+                                        type: Inline
+                                        spec:
+                                            script: curl -I http://34.135.61.53
+                                    environmentVariables: []
+                                    outputVariables: []
+                                    executionTarget: {}
+                                timeout: 10m
+                                failureStrategies:
+                                    - onFailure:
+                                          errors:
+                                              - AllErrors
+                                          action:
+                                              type: Ignore
+                          - step:
+                                name: Stage Deployment
+                                identifier: stageDeployment
+                                type: K8sBlueGreenDeploy
+                                timeout: 10m
+                                spec:
+                                    skipDryRun: false
+                          - stepGroup:
+                                name: Shift 50 Percent Before Switch
+                                identifier: Shift_50_Percent_Before_Switch
+                                steps:
+                                    - step:
+                                          type: K8sApply
+                                          name: Stage 25 Percent
+                                          identifier: Stage_25_Percent
+                                          spec:
+                                              filePaths:
+                                                  - ingress-traffic-split25.yaml
+                                              skipDryRun: false
+                                              skipSteadyStateCheck: false
+                                          timeout: 10m
+                                    - step:
+                                          type: K8sApply
+                                          name: Shift 50 Percent
+                                          identifier: Shift_50_Percent
+                                          spec:
+                                              filePaths:
+                                                  - ingress-traffic-split50.yaml
+                                              skipDryRun: false
+                                              skipSteadyStateCheck: false
+                                          timeout: 10m
+                          - step:
+                                type: ShellScript
+                                name: kubectl get svc all namespaces pre swap
+                                identifier: kubectl_get_svc_all_namespaces_pre_swap
+                                spec:
+                                    shell: Bash
+                                    onDelegate: true
+                                    source:
+                                        type: Inline
+                                        spec:
+                                            script: |-
+                                                kubectl get svc --all-namespaces
+
+                                                kubectl get ep example-svc-stage
+                                    environmentVariables: []
+                                    outputVariables: []
+                                    executionTarget: {}
+                                timeout: 10m
+                                failureStrategies:
+                                    - onFailure:
+                                          errors:
+                                              - AllErrors
+                                          action:
+                                              type: Ignore
+                          - step:
+                                type: ShellScript
+                                name: ping stage service endpoints
+                                identifier: ping_stage_service_endpoints
+                                spec:
+                                    shell: Bash
+                                    onDelegate: true
+                                    source:
+                                        type: Inline
+                                        spec:
+                                            script: |-
+                                                for i in 10.52.1.11:80 10.52.2.10:80 
+                                                do
+                                                ping -c 5 $i
+                                                done
+                                    environmentVariables: []
+                                    outputVariables: []
+                                    executionTarget: {}
+                                timeout: 10m
+                                failureStrategies:
+                                    - onFailure:
+                                          errors:
+                                              - AllErrors
+                                          action:
+                                              type: Ignore
+                          - step:
+                                name: Swap primary with stage service
+                                identifier: bgSwapServices
+                                type: K8sBGSwapServices
+                                timeout: 10m
+                                spec:
+                                    skipDryRun: false
+                          - stepGroup:
+                                name: Shift Remaining Traffic After Switch
+                                identifier: Shift_Remaining_Traffic_After_Switch
+                                steps:
+                                    - step:
+                                          type: K8sApply
+                                          name: Stage Down to 25 Percent
+                                          identifier: Stage_Down_to_25_Percent
+                                          spec:
+                                              filePaths:
+                                                  - ingress-traffic-split25.yaml
+                                              skipDryRun: false
+                                              skipSteadyStateCheck: false
+                                          timeout: 10m
+                                    - step:
+                                          type: K8sApply
+                                          name: Stage Down to 0 Percent
+                                          identifier: Stage_Down_to_0_Percent
+                                          spec:
+                                              filePaths:
+                                                  - ingress-traffic-split0.yaml
+                                              skipDryRun: false
+                                              skipSteadyStateCheck: false
+                                          timeout: 10m
+                          - step:
+                                type: ShellScript
+                                name: kubectl get svc all namespaces post swap
+                                identifier: kubectl_get_svc_all_namespaces_post_swap
+                                spec:
+                                    shell: Bash
+                                    onDelegate: true
+                                    source:
+                                        type: Inline
+                                        spec:
+                                            script: |-
+                                                kubectl get svc --all-namespaces
+
+                                                kubectl get ep example-svc-stage
+                                    environmentVariables: []
+                                    outputVariables: []
+                                    executionTarget: {}
+                                timeout: 10m
+                                failureStrategies:
+                                    - onFailure:
+                                          errors:
+                                              - AllErrors
+                                          action:
+                                              type: Ignore
+                          - step:
+                                type: ShellScript
+                                name: ping stage service post swap
+                                identifier: ping_stage_service_post_swap
+                                spec:
+                                    shell: Bash
+                                    onDelegate: true
+                                    source:
+                                        type: Inline
+                                        spec:
+                                            script: |-
+                                                for i in 10.52.1.11:80 10.52.2.10:80 
+                                                do
+                                                ping -c 5 $i
+                                                done
+                                    environmentVariables: []
+                                    outputVariables: []
+                                    executionTarget: {}
+                                timeout: 10m
+                                failureStrategies:
+                                    - onFailure:
+                                          errors:
+                                              - AllErrors
+                                          action:
+                                              type: Ignore
+                      rollbackSteps:
+                          - step:
+                                name: Swap primary with stage service
+                                identifier: rollbackBgSwapServices
+                                type: K8sBGSwapServices
+                                timeout: 10m
+                                spec:
+                                    skipDryRun: false
+                  serviceDependencies: []
+              tags: {}
+              failureStrategies:
+                  - onFailure:
+                        errors:
+                            - AllErrors
+                        action:
+                            type: StageRollback

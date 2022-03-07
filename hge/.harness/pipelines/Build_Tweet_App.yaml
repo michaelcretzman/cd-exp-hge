@@ -34,7 +34,7 @@ pipeline:
                                         - <+pipeline.sequenceId>
                           - step:
                                 type: Run
-                                name: echo
+                                name: echoexp
                                 identifier: echo
                                 spec:
                                     connectorRef: DockerHub_Builds

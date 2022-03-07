@@ -1,0 +1,23 @@
+inputSet:
+  identifier: "Example_2"
+  name: "Example 2"
+  tags: {}
+  orgIdentifier: "default"
+  projectIdentifier: "CD_Examples"
+  pipeline:
+    identifier: "On_New_Artifact_Tweet"
+    stages:
+    - stage:
+        identifier: "Deploy"
+        type: "Deployment"
+        spec:
+          serviceConfig:
+            serviceDefinition:
+              type: "Kubernetes"
+              spec:
+                artifacts:
+                  primary:
+                    type: "DockerRegistry"
+                    spec:
+                      connectorRef: "DockerHub"
+                      tag: "<+trigger.artifact.build>"

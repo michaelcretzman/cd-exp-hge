@@ -13,6 +13,10 @@ connector:
         type: UsernameToken
         spec:
           username: michaelcretzman
-          tokenRef: harnessdocs_github_pw
+          tokenRef: mrcgithubpathge
+    apiAccess:
+      type: Token
+      spec:
+        tokenRef: mrcgithubpathge
     executeOnDelegate: false
     type: Repo

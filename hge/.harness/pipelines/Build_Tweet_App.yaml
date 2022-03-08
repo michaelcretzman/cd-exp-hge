@@ -40,4 +40,5 @@ pipeline:
                                     connectorRef: DockerHub_Builds
                                     image: curlimages/curl:7.80.0
                                     command: echo <+codebase.commitSha>
+              description: foo
     variables: []

@@ -1,0 +1,12 @@
+connector:
+  name: gcr
+  identifier: gcr
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: Gcp
+  spec:
+    credential:
+      type: InheritFromDelegate
+    delegateSelectors:
+    - gcpdocplay

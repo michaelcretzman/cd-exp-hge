@@ -17,6 +17,12 @@ pipeline:
                           spec:
                               artifacts:
                                   sidecars: []
+                                  primary:
+                                      spec:
+                                          connectorRef: DockerHub
+                                          imagePath: nginx:latest
+                                          tag: <+input>
+                                      type: DockerRegistry
                               variables: []
                               manifestOverrideSets: []
                               manifests:

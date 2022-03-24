@@ -1,0 +1,19 @@
+inputSet:
+  identifier: "foo"
+  name: "foo"
+  orgIdentifier: "default"
+  projectIdentifier: "CD_Examples"
+  pipeline:
+    identifier: "Apply"
+    stages:
+    - stage:
+        identifier: "Apply"
+        type: "Deployment"
+        spec:
+          infrastructure:
+            infrastructureDefinition:
+              type: "KubernetesDirect"
+              spec:
+                connectorRef: "cddoc"
+                namespace: "defaulr"
+                releaseName: "dd"

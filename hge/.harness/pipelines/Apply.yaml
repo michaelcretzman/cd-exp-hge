@@ -59,7 +59,7 @@ pipeline:
                           spec:
                               connectorRef: <+input>
                               namespace: <+input>
-                              releaseName: <+input>
+                              releaseName: release-<+INFRA-KEY>
                       allowSimultaneousDeployments: false
                       infrastructureKey: <+input>
                   execution:

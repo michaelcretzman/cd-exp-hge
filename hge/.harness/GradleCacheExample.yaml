@@ -1,0 +1,72 @@
+pipeline:
+    name: GradleCacheExample
+    identifier: GradleCacheExample
+    allowStageExecutions: false
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    properties:
+        ci:
+            codebase:
+                connectorRef: account.General_Github
+                repoName: spring-guides/gs-gradle
+                build: <+input>
+    stages:
+        - stage:
+              name: Build Gradle
+              identifier: Build_Micro_Integrator
+              type: CI
+              spec:
+                  cloneCodebase: true
+                  infrastructure:
+                      type: KubernetesDirect
+                      spec:
+                          connectorRef: account.gke_francisco_swat
+                          namespace: harness-delegate-ng
+                  execution:
+                      steps:
+                          - step:
+                                type: RestoreCacheGCS
+                                name: Get Maven Deps from GCS
+                                identifier: Get_Maven_Deps_from_GCS
+                                spec:
+                                    connectorRef: Sales_GCR
+                                    bucket: francisco-swat-test
+                                    key: gradle-v2
+                                    archiveFormat: Tar
+                          - step:
+                                type: Run
+                                name: Build Car File
+                                identifier: Build_Docker_Image
+                                spec:
+                                    connectorRef: harnessImage
+                                    image: gradle
+                                    command: |-
+                                        cd complete
+                                        gradle build --no-daemon --info --stacktrace
+                                        ls -ltra ~/.gradle/
+                                    privileged: false
+                                    envVariables:
+                                        GRADLE_USER_HOME: /harness/.gradle
+                                    imagePullPolicy: IfNotPresent
+                                    runAsUser: "0"
+                                    resources:
+                                        limits:
+                                            memory: 1Gi
+                                failureStrategies: []
+                          - step:
+                                type: SaveCacheGCS
+                                name: Save Maven Dependencies
+                                identifier: Save_Maven_Dependencies
+                                spec:
+                                    connectorRef: Sales_GCR
+                                    bucket: francisco-swat-test
+                                    key: gradle-v2
+                                    sourcePaths:
+                                        - /harness/.gradle
+                                    archiveFormat: Tar
+                  sharedPaths:
+                      - /var/run
+                      - /root/.gradle
+    notificationRules: []
+    variables: []

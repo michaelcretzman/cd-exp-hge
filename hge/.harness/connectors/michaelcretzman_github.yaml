@@ -1,5 +1,5 @@
 connector:
-  name: michaelcretzman_github
+  name: michaelcretzman_github_repo
   identifier: michaelcretzman_github
   description:
   orgIdentifier: default

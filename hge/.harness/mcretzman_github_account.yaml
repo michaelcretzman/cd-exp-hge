@@ -1,0 +1,23 @@
+connector:
+  name: mcretzman_github_account
+  identifier: mcretzman_github_account
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: Github
+  spec:
+    url: https://github.com/wings-software
+    validationRepo: harness-docs
+    authentication:
+      type: Http
+      spec:
+        type: UsernameToken
+        spec:
+          username: michaelcretzman
+          tokenRef: michaelcretzman_github_pat
+    apiAccess:
+      type: Token
+      spec:
+        tokenRef: michaelcretzman_github_pat
+    executeOnDelegate: false
+    type: Account

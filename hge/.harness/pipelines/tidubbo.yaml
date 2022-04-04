@@ -16,34 +16,45 @@ pipeline:
                   cloneCodebase: true
                   execution:
                       steps:
-                          - step:
-                                type: RunTests
-                                name: runTestsWithIntelligence
-                                identifier: runTestsWithIntelligence
-                                spec:
-                                    connectorRef: account.GCR
-                                    image: maven:3-openjdk-8
-                                    args: test -Dmaven.test.failure.ignore=true -DfailIfNoTests=false
-                                    buildTool: Maven
-                                    language: Java
-                                    packages: org.apache.dubbo,com.alibaba.dubbo
-                                    runOnlySelectedTests: true
-                                    reports:
-                                        type: JUnit
-                                        spec:
-                                            paths:
-                                                - "**/*.xml"
-                                    resources:
-                                        limits:
-                                            memory: 2Gi
-                                            cpu: 2000m
-                                timeout: 60m
+                          - parallel:
+                                - step:
+                                      type: RunTests
+                                      name: runTestsWithIntelligence
+                                      identifier: runTestsWithIntelligence
+                                      spec:
+                                          connectorRef: account.GCR
+                                          image: maven:3-openjdk-8
+                                          args: test -Dmaven.test.failure.ignore=true -DfailIfNoTests=false
+                                          buildTool: Maven
+                                          language: Java
+                                          packages: org.apache.dubbo,com.alibaba.dubbo
+                                          runOnlySelectedTests: true
+                                          reports:
+                                              type: JUnit
+                                              spec:
+                                                  paths:
+                                                      - "**/*.xml"
+                                          resources:
+                                              limits:
+                                                  memory: 2Gi
+                                                  cpu: 2000m
+                                      timeout: 60m
+                                - step:
+                                      type: RunTests
+                                      name: run test 2
+                                      identifier: run_test_2
+                                      spec:
+                                          connectorRef: gcr
+                                          image: foo
+                                          language: Java
+                                          buildTool: Maven
+                                          args: foo
+                                          runOnlySelectedTests: true
                   infrastructure:
                       type: KubernetesDirect
                       spec:
                           connectorRef: Kubernetes_Quickstart
                           namespace: harness-delegate
-              variables: []
     projectIdentifier: CD_Examples
     orgIdentifier: default
     description: TI for open source project dubbo

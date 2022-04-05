@@ -45,12 +45,12 @@ pipeline:
                                             skipResourceVersioning: false
                               artifacts:
                                   primary:
-                                      type: Gcr
                                       spec:
                                           connectorRef: GCP_Example
                                           imagePath: harness-playground/harness/todolist-sample
-                                          registryHostname: gcr.io
                                           tag: <+input>
+                                          registryHostname: gcr.io
+                                      type: Gcr
                   infrastructure:
                       environmentRef: tweet
                       infrastructureDefinition:

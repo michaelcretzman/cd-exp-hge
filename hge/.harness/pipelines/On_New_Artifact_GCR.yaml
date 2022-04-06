@@ -51,6 +51,14 @@ pipeline:
                                           tag: <+input>
                                           registryHostname: gcr.io
                                       type: Gcr
+                                  sidecars:
+                                      - sidecar:
+                                            spec:
+                                                connectorRef: DockerHub
+                                                imagePath: library/nginx
+                                                tag: <+input>
+                                            identifier: nginx
+                                            type: DockerRegistry
                   infrastructure:
                       environmentRef: tweet
                       infrastructureDefinition:

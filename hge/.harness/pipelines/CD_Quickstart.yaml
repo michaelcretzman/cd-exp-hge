@@ -86,7 +86,4 @@ pipeline:
               variables: []
     flowControl:
         barriers: []
-    variables:
-        - name: foo
-          type: String
-          value: <+input>
+    variables: []

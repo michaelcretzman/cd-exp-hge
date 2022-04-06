@@ -25,7 +25,7 @@ pipeline:
                                             store:
                                                 type: Github
                                                 spec:
-                                                    connectorRef: harnessdocs
+                                                    connectorRef: michaelcretzman_github
                                                     gitFetchType: Branch
                                                     paths:
                                                         - default-k8s-manifests/Manifests/Files/ng-values.yaml
@@ -37,7 +37,7 @@ pipeline:
                                             store:
                                                 type: Github
                                                 spec:
-                                                    connectorRef: harnessdocs
+                                                    connectorRef: michaelcretzman_github
                                                     gitFetchType: Branch
                                                     paths:
                                                         - default-k8s-manifests/Manifests/Files/templates
@@ -47,7 +47,7 @@ pipeline:
                                   primary:
                                       spec:
                                           connectorRef: GCP_Example
-                                          imagePath: harness-playground/harness/todolist-sample
+                                          imagePath: docs-play/todolist-sample
                                           tag: <+input>
                                           registryHostname: gcr.io
                                       type: Gcr

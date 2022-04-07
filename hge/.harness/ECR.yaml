@@ -1,0 +1,15 @@
+connector:
+  name: ECR
+  identifier: ECR
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: Aws
+  spec:
+    credential:
+      type: ManualConfig
+      spec:
+        accessKey: AKIARHVJ6GPAWLVRC2MU
+        secretKeyRef: ecruser
+    delegateSelectors:
+    - gcpdocplay

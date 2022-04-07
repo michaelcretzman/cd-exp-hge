@@ -43,6 +43,14 @@ pipeline:
                                                         - default-k8s-manifests/Manifests/Files/templates
                                                     branch: main
                                             skipResourceVersioning: false
+                              artifacts:
+                                  primary:
+                                      spec:
+                                          connectorRef: ECR
+                                          imagePath: todolist-sample
+                                          tag: latest
+                                          region: us-east-1
+                                      type: Ecr
                   infrastructure:
                       environmentRef: helmchart
                       infrastructureDefinition:

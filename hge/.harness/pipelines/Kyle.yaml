@@ -43,7 +43,16 @@ pipeline:
                                                         - default-k8s-manifests/Manifests/Files/templates
                                                     branch: main
                                             skipResourceVersioning: false
-                              artifacts: {}
+                              artifacts:
+                                  primary:
+                                      spec:
+                                          connectorRef: HarnessNexusRepo
+                                          artifactPath: base/alpine
+                                          tag: <+input>
+                                          repository: todolist
+                                          repositoryFormat: docker
+                                          repositoryPort: "8181"
+                                      type: Nexus3Registry
                   infrastructure:
                       environmentRef: helmchart
                       infrastructureDefinition:

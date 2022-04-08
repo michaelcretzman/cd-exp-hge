@@ -23,20 +23,32 @@ pipeline:
                                       spec:
                                           connectorRef: DockerHub
                                           imagePath: library/nginx
-                                          tag: <+input>
+                                          tag: stable
                                       type: DockerRegistry
                               manifests:
                                   - manifest:
-                                        identifier: nginx
+                                        identifier: values
+                                        type: Values
+                                        spec:
+                                            store:
+                                                type: Github
+                                                spec:
+                                                    connectorRef: harnessdocs
+                                                    gitFetchType: Branch
+                                                    paths:
+                                                        - default-k8s-manifests/Manifests/Files/ng-values.yaml
+                                                    branch: main
+                                  - manifest:
+                                        identifier: manifests
                                         type: K8sManifest
                                         spec:
                                             store:
                                                 type: Github
                                                 spec:
-                                                    connectorRef: quickstart
+                                                    connectorRef: harnessdocs
                                                     gitFetchType: Branch
                                                     paths:
-                                                        - content/en/examples/application/nginx-app.yaml
+                                                        - default-k8s-manifests/Manifests/Files/templates
                                                     branch: main
                                             skipResourceVersioning: false
                               variables: []

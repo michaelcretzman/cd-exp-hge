@@ -1,0 +1,65 @@
+pipeline:
+    name: Native Helm
+    identifier: Native_Helm
+    allowStageExecutions: false
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    stages:
+        - stage:
+              name: Native Helm
+              identifier: Native_Helm
+              description: ""
+              type: Deployment
+              spec:
+                  serviceConfig:
+                      serviceRef: quickstart
+                      serviceDefinition:
+                          type: NativeHelm
+                          spec:
+                              variables: []
+                              manifests:
+                                  - manifest:
+                                        identifier: nginx
+                                        type: HelmChart
+                                        spec:
+                                            store:
+                                                type: Http
+                                                spec:
+                                                    connectorRef: Bitnami_Helm_Repo
+                                            chartName: nginx
+                                            chartVersion: 8.8.1
+                                            helmVersion: V3
+                                            skipResourceVersioning: false
+                  infrastructure:
+                      environmentRef: native_helm
+                      infrastructureDefinition:
+                          type: KubernetesDirect
+                          spec:
+                              connectorRef: cddoc
+                              namespace: default
+                              releaseName: release-<+INFRA_KEY>
+                      allowSimultaneousDeployments: false
+                  execution:
+                      steps:
+                          - step:
+                                name: Helm Deployment
+                                identifier: helmDeployment
+                                type: HelmDeploy
+                                timeout: 10m
+                                spec:
+                                    skipDryRun: false
+                      rollbackSteps:
+                          - step:
+                                name: Helm Rollback
+                                identifier: helmRollback
+                                type: HelmRollback
+                                timeout: 10m
+                                spec: {}
+              tags: {}
+              failureStrategies:
+                  - onFailure:
+                        errors:
+                            - AllErrors
+                        action:
+                            type: StageRollback

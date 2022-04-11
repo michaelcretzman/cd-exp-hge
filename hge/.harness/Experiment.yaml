@@ -1,0 +1,73 @@
+pipeline:
+    name: Experiment
+    identifier: Experiment
+    allowStageExecutions: false
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    stages:
+        - stage:
+              name: exp
+              identifier: exp
+              description: ""
+              type: Deployment
+              spec:
+                  serviceConfig:
+                      serviceRef: nginx
+                      serviceDefinition:
+                          type: Kubernetes
+                          spec:
+                              variables: []
+                              manifests:
+                                  - manifest:
+                                        identifier: manifest
+                                        type: K8sManifest
+                                        spec:
+                                            store:
+                                                type: Github
+                                                spec:
+                                                    connectorRef: harnessdocs
+                                                    gitFetchType: Branch
+                                                    paths:
+                                                        - kubernetes/controllers/deployment.yaml
+                                                    branch: main
+                                            skipResourceVersioning: false
+                              artifacts:
+                                  primary:
+                                      spec:
+                                          connectorRef: DockerHub
+                                          imagePath: library/nginx
+                                          tag: <+input>
+                                      type: DockerRegistry
+                  infrastructure:
+                      environmentRef: helmchart
+                      infrastructureDefinition:
+                          type: KubernetesDirect
+                          spec:
+                              connectorRef: cddoc
+                              namespace: default
+                              releaseName: release-<+INFRA_KEY>
+                      allowSimultaneousDeployments: false
+                  execution:
+                      steps:
+                          - step:
+                                name: Rollout Deployment
+                                identifier: rolloutDeployment
+                                type: K8sRollingDeploy
+                                timeout: 10m
+                                spec:
+                                    skipDryRun: false
+                      rollbackSteps:
+                          - step:
+                                name: Rollback Rollout Deployment
+                                identifier: rollbackRolloutDeployment
+                                type: K8sRollingRollback
+                                timeout: 10m
+                                spec: {}
+              tags: {}
+              failureStrategies:
+                  - onFailure:
+                        errors:
+                            - AllErrors
+                        action:
+                            type: StageRollback

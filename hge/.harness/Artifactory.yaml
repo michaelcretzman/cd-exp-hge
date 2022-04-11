@@ -22,7 +22,7 @@ pipeline:
                                   primary:
                                       spec:
                                           connectorRef: account.Harness_Artifactory
-                                          artifactPath: library/alpine
+                                          artifactPath: alpine
                                           tag: <+input>
                                           repository: bintray-docker-remote
                                           repositoryUrl: bintray-docker-remote.jfrog.io

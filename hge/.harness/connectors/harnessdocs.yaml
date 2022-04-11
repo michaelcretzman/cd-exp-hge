@@ -14,7 +14,5 @@ connector:
         spec:
           username: michaelcretzman
           tokenRef: harnessdocs_github_pw
-    delegateSelectors:
-    - docplayground
-    executeOnDelegate: true
+    executeOnDelegate: false
     type: Repo

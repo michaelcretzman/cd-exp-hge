@@ -22,10 +22,10 @@ pipeline:
                                   primary:
                                       spec:
                                           connectorRef: account.Harness_Artifactory
-                                          artifactPath: library/mongo
+                                          artifactPath: library/alpine
                                           tag: <+input>
-                                          repository: docker-remote
-                                          repositoryUrl: harness-docker-remote.jfrog.io
+                                          repository: bintray-docker-remote
+                                          repositoryUrl: bintray-docker-remote.jfrog.io
                                           repositoryFormat: docker
                                       type: ArtifactoryRegistry
                   infrastructure:

@@ -1,0 +1,33 @@
+pipeline:
+    name: Policy
+    identifier: Policy
+    allowStageExecutions: false
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    stages:
+        - stage:
+              name: Test
+              identifier: Test
+              description: ""
+              type: Approval
+              spec:
+                  execution:
+                      steps:
+                          - step:
+                                type: ShellScript
+                                name: Echo
+                                identifier: Echo
+                                spec:
+                                    shell: Bash
+                                    onDelegate: true
+                                    source:
+                                        type: Inline
+                                        spec:
+                                            script: echo "hello"
+                                    environmentVariables: []
+                                    outputVariables: []
+                                    executionTarget: {}
+                                timeout: 10m
+                  serviceDependencies: []
+              tags: {}

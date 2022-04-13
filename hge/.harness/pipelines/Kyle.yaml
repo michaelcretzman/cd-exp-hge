@@ -47,11 +47,11 @@ pipeline:
                                   primary:
                                       spec:
                                           connectorRef: HarnessNexusRepo
-                                          artifactPath: busybox
-                                          tag: latest
+                                          artifactPath: todolist
+                                          tag: latest3
                                           repository: cdp-test-group1
                                           repositoryFormat: docker
-                                          repositoryPort: "1111"
+                                          repositoryPort: "6661"
                                       type: Nexus3Registry
                   infrastructure:
                       environmentRef: helmchart

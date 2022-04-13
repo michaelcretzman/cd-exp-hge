@@ -118,3 +118,7 @@ pipeline:
                             - AllErrors
                         action:
                             type: StageRollback
+              variables:
+                  - name: name
+                    type: String
+                    value: todolist

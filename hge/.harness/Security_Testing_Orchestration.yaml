@@ -1,0 +1,115 @@
+pipeline:
+    name: Security Testing Orchestration
+    identifier: Security_Testing_Orchestration
+    allowStageExecutions: false
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    properties:
+        ci:
+            codebase:
+                connectorRef: GitHub
+                build: <+input>
+    stages:
+        - stage:
+              name: Docker Build and Scan
+              identifier: Docker_Build_and_Scan
+              type: CI
+              spec:
+                  cloneCodebase: true
+                  infrastructure:
+                      type: KubernetesDirect
+                      spec:
+                          connectorRef: Quickstart
+                          namespace: harness-qa-delegate
+                  sharedPaths:
+                      - /var/run
+                  serviceDependencies:
+                      - identifier: dind
+                        name: dind
+                        type: Service
+                        spec:
+                            connectorRef: Docker_Hub
+                            image: docker:dind
+                            privileged: true
+                            entrypoint:
+                                - dockerd-entrypoint.sh
+                  execution:
+                      steps:
+                          - parallel:
+                                - step:
+                                      type: Security
+                                      name: brakeman scan
+                                      identifier: brakeman_scan
+                                      spec:
+                                          connectorRef: account.harnessImage
+                                          privileged: true
+                                          settings:
+                                              policy_type: orchestratedScan
+                                              scan_type: repository
+                                              repository_project: nodegoat
+                                              repository_branch: <+codebase.branch>
+                                              product_name: brakeman
+                                              product_config_name: brakeman-default
+                                              fail_on_severity: HIGH
+                                          imagePullPolicy: Always
+                                      failureStrategies:
+                                          - onFailure:
+                                                errors:
+                                                    - AllErrors
+                                                action:
+                                                    type: Ignore
+                                - step:
+                                      type: Security
+                                      name: owasp scan
+                                      identifier: owasp_scan
+                                      spec:
+                                          connectorRef: account.harnessImage
+                                          privileged: true
+                                          settings:
+                                              policy_type: orchestratedScan
+                                              scan_type: repository
+                                              repository_project: nodegoat
+                                              repository_branch: <+codebase.branch>
+                                              product_name: owasp
+                                              product_config_name: owasp 5.x
+                                              fail_on_severity: HIGH
+                                          imagePullPolicy: Always
+                                      failureStrategies:
+                                          - onFailure:
+                                                errors:
+                                                    - AllErrors
+                                                action:
+                                                    type: Ignore
+                          - step:
+                                type: Run
+                                name: Build Image
+                                identifier: Build_Docker_Image
+                                spec:
+                                    connectorRef: Docker_Hub
+                                    image: docker:latest
+                                    command: docker build . -t nodegoat:local
+                                    privileged: true
+                          - step:
+                                type: Security
+                                name: aqua-trivy scan
+                                identifier: aqua_trivy_scan
+                                spec:
+                                    connectorRef: account.harnessImage
+                                    privileged: true
+                                    settings:
+                                        product_name: aqua-trivy
+                                        product_config_name: aqua-trivy
+                                        policy_type: orchestratedScan
+                                        scan_type: container
+                                        container_type: local_image
+                                        container_domain: docker.io
+                                        container_project: nodegoat
+                                        container_tag: local
+                                        fail_on_severity: HIGH
+                                    imagePullPolicy: Always
+                                failureStrategies: []
+              variables:
+                  - name: sto_api_key
+                    type: Secret
+                    value: <+input>

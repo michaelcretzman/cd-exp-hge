@@ -28,7 +28,7 @@ pipeline:
                                                     connectorRef: harnessdocs
                                                     gitFetchType: Branch
                                                     paths:
-                                                        - default-k8s-manifests/Manifests/Files/ng-values-noart.yaml
+                                                        - default-k8s-manifests/Manifests/Files/ng-values.yaml
                                                     branch: main
                                   - manifest:
                                         identifier: maifests
@@ -48,10 +48,10 @@ pipeline:
                                       spec:
                                           connectorRef: HarnessNexusRepo
                                           artifactPath: base/alpine
-                                          tag: <+input>
-                                          repository: todolist
+                                          tag: "1.0"
+                                          repository: cdp-test-group1
                                           repositoryFormat: docker
-                                          repositoryPort: "8181"
+                                          repositoryPort: "1111"
                                       type: Nexus3Registry
                   infrastructure:
                       environmentRef: helmchart

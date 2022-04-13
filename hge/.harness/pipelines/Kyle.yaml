@@ -47,8 +47,8 @@ pipeline:
                                   primary:
                                       spec:
                                           connectorRef: HarnessNexusRepo
-                                          artifactPath: base/alpine
-                                          tag: "1.0"
+                                          artifactPath: busybox
+                                          tag: latest
                                           repository: cdp-test-group1
                                           repositoryFormat: docker
                                           repositoryPort: "1111"

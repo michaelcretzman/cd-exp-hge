@@ -1,0 +1,90 @@
+pipeline:
+    name: Terraform
+    identifier: Terraform
+    allowStageExecutions: false
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    stages:
+        - stage:
+              name: Terraform
+              identifier: Terraform
+              description: ""
+              type: Deployment
+              spec:
+                  serviceConfig:
+                      serviceRef: quickstart
+                      serviceDefinition:
+                          type: Kubernetes
+                          spec:
+                              variables: []
+                  infrastructure:
+                      environmentRef: test1
+                      infrastructureDefinition:
+                          type: KubernetesDirect
+                          spec:
+                              connectorRef: <+input>
+                              namespace: <+input>
+                              releaseName: release-<+INFRA_KEY>
+                      allowSimultaneousDeployments: false
+                  execution:
+                      steps:
+                          - step:
+                                name: Rollout Deployment
+                                identifier: rolloutDeployment
+                                type: K8sRollingDeploy
+                                timeout: 10m
+                                spec:
+                                    skipDryRun: false
+                          - step:
+                                type: TerraformPlan
+                                name: Terraform Plan
+                                identifier: Terraform_Plan
+                                spec:
+                                    configuration:
+                                        command: Apply
+                                        configFiles:
+                                            store:
+                                                type: Github
+                                                spec:
+                                                    gitFetchType: Branch
+                                                    connectorRef: mcretzman_github_account
+                                                    repoName: foo
+                                                    branch: main
+                                                    folderPath: bar
+                                        secretManagerRef: <+input>
+                                    provisionerIdentifier: "123"
+                                timeout: 10m
+                          - step:
+                                type: TerraformApply
+                                name: Terraform Apply
+                                identifier: Terraform_Apply
+                                spec:
+                                    provisionerIdentifier: abc
+                                    configuration:
+                                        type: Inline
+                                        spec:
+                                            configFiles:
+                                                store:
+                                                    type: Github
+                                                    spec:
+                                                        gitFetchType: Branch
+                                                        connectorRef: mcretzman_github_account
+                                                        repoName: foo
+                                                        branch: main
+                                                        folderPath: bar
+                                timeout: 10m
+                      rollbackSteps:
+                          - step:
+                                name: Rollback Rollout Deployment
+                                identifier: rollbackRolloutDeployment
+                                type: K8sRollingRollback
+                                timeout: 10m
+                                spec: {}
+              tags: {}
+              failureStrategies:
+                  - onFailure:
+                        errors:
+                            - AllErrors
+                        action:
+                            type: StageRollback

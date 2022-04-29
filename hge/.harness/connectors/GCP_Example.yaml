@@ -7,6 +7,8 @@ connector:
   type: Gcp
   spec:
     credential:
-      type: InheritFromDelegate
+      type: ManualConfig
+      spec:
+        secretKeyRef: GCP_KMS_Example
     delegateSelectors:
     - gcpdocplay

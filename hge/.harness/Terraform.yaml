@@ -53,6 +53,12 @@ pipeline:
                                                     branch: main
                                                     folderPath: bar
                                         secretManagerRef: <+input>
+                                        varFiles:
+                                            - varFile:
+                                                  identifier: foo
+                                                  spec:
+                                                      content: bar
+                                                  type: Inline
                                     provisionerIdentifier: "123"
                                 timeout: 10m
                           - step:

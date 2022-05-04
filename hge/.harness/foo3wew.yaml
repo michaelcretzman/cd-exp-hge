@@ -1,0 +1,20 @@
+connector:
+  name: foo3wew
+  identifier: foo3wew
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: Github
+  spec:
+    url: git@foo
+    validationRepo: bar
+    authentication:
+      type: Ssh
+      spec:
+        sshKeyRef: sshfoo
+    apiAccess:
+      type: Token
+      spec:
+        tokenRef: linebreaks
+    executeOnDelegate: false
+    type: Account

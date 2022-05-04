@@ -1,0 +1,23 @@
+connector:
+  name: wings
+  identifier: wings
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: Github
+  spec:
+    url: https://github.com/wings-software
+    validationRepo: https://github.com/wings-software/harness-docs
+    authentication:
+      type: Http
+      spec:
+        type: UsernameToken
+        spec:
+          username: michaelcretzman
+          tokenRef: githubmrcallscopes
+    apiAccess:
+      type: Token
+      spec:
+        tokenRef: githubmrcallscopes
+    executeOnDelegate: false
+    type: Account

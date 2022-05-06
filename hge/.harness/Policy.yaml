@@ -15,19 +15,14 @@ pipeline:
                   execution:
                       steps:
                           - step:
-                                type: ShellScript
-                                name: Echo
-                                identifier: Echo
+                                type: Http
+                                name: Get version
+                                identifier: Get_version
                                 spec:
-                                    shell: Bash
-                                    onDelegate: true
-                                    source:
-                                        type: Inline
-                                        spec:
-                                            script: echo "hello"
-                                    environmentVariables: []
+                                    url: https://app.harness.io/prod1/pm/api/v1/system/version
+                                    method: GET
+                                    headers: []
                                     outputVariables: []
-                                    executionTarget: {}
-                                timeout: 10m
+                                timeout: 10s
                   serviceDependencies: []
               tags: {}

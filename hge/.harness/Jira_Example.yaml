@@ -1,0 +1,13 @@
+connector:
+  name: Jira Example
+  identifier: Jira_Example
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: Jira
+  spec:
+    jiraUrl: https://harness.atlassian.net
+    username: michael.cretzman@harness.io
+    passwordRef: mrcjira
+    delegateSelectors:
+    - gcpdocplay

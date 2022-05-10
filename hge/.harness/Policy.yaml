@@ -33,7 +33,7 @@ pipeline:
                                         - Version
                                     type: Custom
                                     policySpec:
-                                        payload: <+pipeline.stages.app.spec.execution.steps.Get_version.output.httpResponseBody>
+                                        payload: <+pipeline.stages.Test.spec.execution.steps.Get_version.output.httpResponseBody>
                                 timeout: 10m
                   serviceDependencies: []
               tags: {}

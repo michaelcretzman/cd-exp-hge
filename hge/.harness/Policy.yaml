@@ -45,7 +45,7 @@ pipeline:
                                     source:
                                         type: Inline
                                         spec:
-                                            script: '"status: "<+pipeline.stages.Test.spec.execution.steps.Version_Policy.output.status>'
+                                            script: echo <+pipeline.stages.Test.spec.execution.steps.Version_Policy.output.status>
                                     environmentVariables: []
                                     outputVariables: []
                                     executionTarget: {}

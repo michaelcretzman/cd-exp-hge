@@ -35,23 +35,5 @@ pipeline:
                                     policySpec:
                                         payload: <+pipeline.stages.Test.spec.execution.steps.Get_version.output.httpResponseBody>
                                 timeout: 10m
-                          - step:
-                                type: ShellScript
-                                name: Policy Step Expressions
-                                identifier: Policy_Step_Expressions
-                                spec:
-                                    shell: Bash
-                                    onDelegate: true
-                                    source:
-                                        type: Inline
-                                        spec:
-                                            script: |+
-                                                <+pipeline.stages.Test.spec.execution.steps.Version_Policy.output.policySetDetails.Version.policyDetails.check_version.status>
-
-
-                                    environmentVariables: []
-                                    outputVariables: []
-                                    executionTarget: {}
-                                timeout: 10m
                   serviceDependencies: []
               tags: {}

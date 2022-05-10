@@ -24,5 +24,16 @@ pipeline:
                                     headers: []
                                     outputVariables: []
                                 timeout: 10s
+                          - step:
+                                type: Policy
+                                name: Version Policy
+                                identifier: Version_Policy
+                                spec:
+                                    policySets:
+                                        - Version
+                                    type: Custom
+                                    policySpec:
+                                        payload: <+pipeline.stages.app.spec.execution.steps.Get_version.output.httpResponseBody>
+                                timeout: 10m
                   serviceDependencies: []
               tags: {}

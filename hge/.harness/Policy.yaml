@@ -46,7 +46,7 @@ pipeline:
                                         type: Inline
                                         spec:
                                             script: |+
-                                                <+pipeline.stages.Test.spec.execution.steps.Version_Policy.output.status>
+                                                <+pipeline.stages.Test.spec.execution.steps.Version_Policy.output.policySetDetails.Version.policyDetails.check_version.status>
 
 
                                     environmentVariables: []

@@ -35,5 +35,20 @@ pipeline:
                                     policySpec:
                                         payload: <+pipeline.stages.Test.spec.execution.steps.Get_version.output.httpResponseBody>
                                 timeout: 10m
+                          - step:
+                                type: ShellScript
+                                name: Pass or Fail
+                                identifier: Pass_or_Fail
+                                spec:
+                                    shell: Bash
+                                    onDelegate: true
+                                    source:
+                                        type: Inline
+                                        spec:
+                                            script: '"status: "<+pipeline.stages.Test.spec.execution.steps.Version_Policy.output.status>'
+                                    environmentVariables: []
+                                    outputVariables: []
+                                    executionTarget: {}
+                                timeout: 10m
                   serviceDependencies: []
               tags: {}

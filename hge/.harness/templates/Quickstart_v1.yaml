@@ -31,7 +31,7 @@ template:
                           name: Rolling
                           identifier: Rolling
                           spec:
-                              skipDryRun: false
+                              skipDryRun: true
                           timeout: 10m
                 rollbackSteps: []
             serviceDependencies: []

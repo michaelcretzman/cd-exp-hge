@@ -1,0 +1,16 @@
+connector:
+  name: azure-docs
+  identifier: azuredocs
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: Azure
+  spec:
+    credential:
+      type: InheritFromDelegate
+      spec:
+        auth:
+          type: SystemAssignedManagedIdentity
+    delegateSelectors:
+    - azuredocs
+    azureEnvironmentType: AZURE

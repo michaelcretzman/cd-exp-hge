@@ -1,0 +1,18 @@
+connector:
+  name: azuretest
+  identifier: azuretest
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: Azure
+  spec:
+    credential:
+      type: InheritFromDelegate
+      spec:
+        auth:
+          type: UserAssignedManagedIdentity
+          spec:
+            clientId: cfa6d40c-5052-43f5-88bf-1c1c20048f22
+    delegateSelectors:
+    - azuredocs
+    azureEnvironmentType: AZURE

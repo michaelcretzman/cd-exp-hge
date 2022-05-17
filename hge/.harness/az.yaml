@@ -1,0 +1,18 @@
+connector:
+  name: az
+  identifier: az
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: Azure
+  spec:
+    credential:
+      type: InheritFromDelegate
+      spec:
+        auth:
+          type: UserAssignedManagedIdentity
+          spec:
+            clientId: 4bd29169-9cd4-4d4b-a5de-f923ef987aaf
+    delegateSelectors:
+    - azuredocs
+    azureEnvironmentType: AZURE

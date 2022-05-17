@@ -1,0 +1,91 @@
+pipeline:
+    name: Azure
+    identifier: Azure
+    projectIdentifier: CD_Examples
+    orgIdentifier: default
+    tags: {}
+    stages:
+        - stage:
+              name: deploy
+              identifier: deploy
+              description: ""
+              type: Deployment
+              spec:
+                  serviceConfig:
+                      serviceRef: nginx
+                      serviceDefinition:
+                          spec:
+                              variables: []
+                              manifests:
+                                  - manifest:
+                                        identifier: manifest
+                                        type: K8sManifest
+                                        spec:
+                                            store:
+                                                type: Github
+                                                spec:
+                                                    connectorRef: mcretzman_github_account
+                                                    gitFetchType: Branch
+                                                    paths:
+                                                        - default-k8s-manifests/Manifests/Files/templates
+                                                    repoName: harness-docs
+                                                    branch: main
+                                            skipResourceVersioning: false
+                                  - manifest:
+                                        identifier: values
+                                        type: Values
+                                        spec:
+                                            store:
+                                                type: Github
+                                                spec:
+                                                    connectorRef: mcretzman_github_account
+                                                    gitFetchType: Branch
+                                                    paths:
+                                                        - default-k8s-manifests/Manifests/Files/ng-values.yaml
+                                                    repoName: harness-docs
+                                                    branch: main
+                              artifacts:
+                                  primary:
+                                      spec:
+                                          connectorRef: Azure_Q
+                                          tag: v1
+                                          subscriptionId: 20d6a917-99fa-4b1b-9b2e-a3d624e9dcf0
+                                          registry: registrytestcdp
+                                          repository: hello-world
+                                      type: Acr
+                          type: Kubernetes
+                  infrastructure:
+                      environmentRef: test1
+                      infrastructureDefinition:
+                          type: KubernetesAzure
+                          spec:
+                              connectorRef: Azure_Q
+                              subscriptionId: 20d6a917-99fa-4b1b-9b2e-a3d624e9dcf0
+                              resourceGroup: cdp-test-rg
+                              cluster: docs
+                              namespace: default
+                              releaseName: release-<+INFRA_KEY>
+                      allowSimultaneousDeployments: false
+                  execution:
+                      steps:
+                          - step:
+                                name: Rollout Deployment
+                                identifier: rolloutDeployment
+                                type: K8sRollingDeploy
+                                timeout: 10m
+                                spec:
+                                    skipDryRun: false
+                      rollbackSteps:
+                          - step:
+                                name: Rollback Rollout Deployment
+                                identifier: rollbackRolloutDeployment
+                                type: K8sRollingRollback
+                                timeout: 10m
+                                spec: {}
+              tags: {}
+              failureStrategies:
+                  - onFailure:
+                        errors:
+                            - AllErrors
+                        action:
+                            type: StageRollback

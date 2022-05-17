@@ -1,0 +1,20 @@
+connector:
+  name: Azure Q
+  identifier: Azure_Q
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: Azure
+  spec:
+    credential:
+      type: ManualConfig
+      spec:
+        applicationId: 4bd29169-9cd4-4d4b-a5de-f923ef987aaf
+        tenantId: b229b2bb-5f33-4d22-bce0-730f6474e906
+        auth:
+          type: Secret
+          spec:
+            secretRef: HarnessQA
+    delegateSelectors:
+    - azuredocs
+    azureEnvironmentType: AZURE

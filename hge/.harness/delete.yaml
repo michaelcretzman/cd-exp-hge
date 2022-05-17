@@ -1,0 +1,20 @@
+connector:
+  name: delete
+  identifier: delete
+  description:
+  orgIdentifier: default
+  projectIdentifier: CD_Examples
+  type: Azure
+  spec:
+    credential:
+      type: ManualConfig
+      spec:
+        applicationId: 10f8db11-103e-4f35-964f-14013a56ce56
+        tenantId: b229b2bb-5f33-4d22-bce0-730f6474e906
+        auth:
+          type: Secret
+          spec:
+            secretRef: mrcazureapp
+    delegateSelectors:
+    - azuredocs
+    azureEnvironmentType: AZURE

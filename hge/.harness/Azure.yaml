@@ -41,7 +41,7 @@ pipeline:
                                                     connectorRef: mcretzman_github_account
                                                     gitFetchType: Branch
                                                     paths:
-                                                        - default-k8s-manifests/Manifests/Files/ng-values.yaml
+                                                        - default-k8s-manifests/Manifests/Files/ng_values_dockercfg.yaml
                                                     repoName: harness-docs
                                                     branch: main
                               artifacts:

@@ -27,18 +27,6 @@ pipeline:
                                       type: DockerRegistry
                               manifests:
                                   - manifest:
-                                        identifier: values
-                                        type: Values
-                                        spec:
-                                            store:
-                                                type: Github
-                                                spec:
-                                                    connectorRef: harnessdocs
-                                                    gitFetchType: Branch
-                                                    paths:
-                                                        - default-k8s-manifests/Manifests/Files/ng-values.yaml
-                                                    branch: main
-                                  - manifest:
                                         identifier: manifests
                                         type: K8sManifest
                                         spec:
@@ -50,6 +38,8 @@ pipeline:
                                                     paths:
                                                         - default-k8s-manifests/Manifests/Files/templates
                                                     branch: main
+                                            valuesPaths:
+                                                - default-k8s-manifests/Manifests/Files/ng-values.yaml
                                             skipResourceVersioning: false
                               variables: []
                               manifestOverrideSets: []

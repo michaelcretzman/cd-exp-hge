@@ -14,6 +14,6 @@ connector:
         type: UsernameToken
         spec:
           username: michaelcretzman
-          tokenRef: harnessdocs_github_pw
+          tokenRef: michaelcretzman_github_pat
     executeOnDelegate: false
     type: Account

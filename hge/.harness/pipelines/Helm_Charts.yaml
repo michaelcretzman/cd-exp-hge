@@ -29,7 +29,7 @@ pipeline:
                                             valuesPaths:
                                                 - values.yaml
                                             chartName: nginx
-                                            chartVersion: ""
+                                            chartVersion: 8.8.1
                                             helmVersion: V3
                                             skipResourceVersioning: false
                                             commandFlags:

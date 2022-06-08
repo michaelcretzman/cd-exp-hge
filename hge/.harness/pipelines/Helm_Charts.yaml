@@ -40,7 +40,7 @@ pipeline:
                       infrastructureDefinition:
                           type: KubernetesDirect
                           spec:
-                              connectorRef: Kubernetes_Quickstart
+                              connectorRef: cddoc
                               namespace: default
                               releaseName: release-<+INFRA_KEY>
                       allowSimultaneousDeployments: false

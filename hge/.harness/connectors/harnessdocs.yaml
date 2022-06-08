@@ -6,7 +6,7 @@ connector:
   projectIdentifier: CD_Examples
   type: Github
   spec:
-    url: https://github.com/wings-software
+    url: https://github.com/wings-software/harness-docs.git
     validationRepo: https://github.com/wings-software/harness-docs.git
     authentication:
       type: Http
@@ -16,4 +16,4 @@ connector:
           username: michaelcretzman
           tokenRef: michaelcretzman_github_pat
     executeOnDelegate: false
-    type: Account
+    type: Repo

@@ -26,10 +26,15 @@ pipeline:
                                                 type: Http
                                                 spec:
                                                     connectorRef: Bitnami_Helm_Repo
+                                            valuesPaths:
+                                                - values.yaml
                                             chartName: nginx
                                             chartVersion: ""
                                             helmVersion: V3
                                             skipResourceVersioning: false
+                                            commandFlags:
+                                                - commandType: Pull
+                                                  flag: --verify
                   infrastructure:
                       environmentRef: test
                       infrastructureDefinition:

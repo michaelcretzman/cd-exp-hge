@@ -53,6 +53,7 @@ pipeline:
                                 timeout: 10m
                                 spec:
                                     skipDryRun: false
+                                failureStrategies: []
                       rollbackSteps:
                           - step:
                                 name: Rollback Rollout Deployment

@@ -26,6 +26,7 @@ pipeline:
                                                 type: Http
                                                 spec:
                                                     connectorRef: Bitnami_Helm_Repo
+                                            valuesPaths: <+input>
                                             chartName: nginx
                                             chartVersion: ""
                                             helmVersion: V3

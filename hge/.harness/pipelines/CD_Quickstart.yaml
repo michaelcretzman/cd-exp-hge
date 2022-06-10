@@ -57,6 +57,27 @@ pipeline:
                   execution:
                       steps:
                           - step:
+                                type: ShellScript
+                                name: Artifact Vars
+                                identifier: Artifact_Vars
+                                spec:
+                                    shell: Bash
+                                    onDelegate: true
+                                    source:
+                                        type: Inline
+                                        spec:
+                                            script: |-
+                                                echo "<+artifact.tag>: "<+artifact.tag>
+                                                echo "<+artifact.image>: "<+artifact.image>
+                                                echo "<+artifact.imagePath>: "<+artifact.imagePath>
+                                                echo "<+artifact.imagePullSecret>: "<+artifact.imagePullSecret>
+                                                echo "<+artifact.type>: "<+artifact.type>
+                                                echo "<+artifact.connectorRef>: "<+artifact.connectorRef>
+                                    environmentVariables: []
+                                    outputVariables: []
+                                    executionTarget: {}
+                                timeout: 10m
+                          - step:
                                 name: Rollout Deployment
                                 identifier: rolloutDeployment
                                 type: K8sRollingDeploy

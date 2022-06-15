@@ -50,7 +50,7 @@ pipeline:
                           type: KubernetesDirect
                           spec:
                               connectorRef: Kubernetes_Quickstart
-                              namespace: <+input>
+                              namespace: default
                               releaseName: quickstart
                       allowSimultaneousDeployments: false
                       infrastructureKey: Docs

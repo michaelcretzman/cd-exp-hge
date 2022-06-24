@@ -1,0 +1,10 @@
+overlayInputSet:
+    name: my overlay
+    identifier: my_overlay
+    orgIdentifier: default
+    projectIdentifier: CD_Examples
+    pipelineIdentifier: CD_Quickstart
+    inputSetReferences:
+        - input_example
+        - foo
+    tags: {}

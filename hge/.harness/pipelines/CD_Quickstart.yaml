@@ -41,11 +41,14 @@ pipeline:
                                             valuesPaths:
                                                 - default-k8s-manifests/Manifests/Files/ng-values.yaml
                                             skipResourceVersioning: false
-                              variables: []
+                              variables:
+                                  - name: foo
+                                    type: String
+                                    value: <+input>
                               manifestOverrideSets: []
-                      serviceRef: nginx
+                      serviceRef: <+input>
                   infrastructure:
-                      environmentRef: test1
+                      environmentRef: <+input>
                       infrastructureDefinition:
                           type: KubernetesDirect
                           spec:

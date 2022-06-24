@@ -1,0 +1,23 @@
+inputSet:
+  identifier: "input_example"
+  name: "input example"
+  orgIdentifier: "default"
+  projectIdentifier: "CD_Examples"
+  pipeline:
+    identifier: "CD_Quickstart"
+    stages:
+    - stage:
+        identifier: "Deploy_Service"
+        type: "Deployment"
+        spec:
+          serviceConfig:
+            serviceDefinition:
+              type: "Kubernetes"
+              spec:
+                variables:
+                - name: "foo"
+                  type: "String"
+                  value: "bar"
+            serviceRef: "nginx"
+          infrastructure:
+            environmentRef: "helmchart"

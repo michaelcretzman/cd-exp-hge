@@ -76,11 +76,12 @@ pipeline:
                   infrastructure:
                       type: KubernetesDirect
                       spec:
-                          connectorRef: docbuilds
-                          namespace: default
+                          connectorRef: <+input>
+                          namespace: <+input>
                           serviceAccountName: ""
                           automountServiceAccountToken: true
                           nodeSelector: {}
+                          os: Linux
               variables:
                   - name: foo
                     type: String

@@ -76,6 +76,9 @@ pipeline:
                                                 echo "artifact.imagePullSecret: "<+artifact.imagePullSecret>
                                                 echo "artifact.type: "<+artifact.type>
                                                 echo "artifact.connectorRef: "<+artifact.connectorRef>
+
+
+                                                echo "artifact.path: "<+artifact.path>
                                     environmentVariables: []
                                     outputVariables: []
                                     executionTarget: {}

@@ -28,7 +28,7 @@ pipeline:
                                                 spec:
                                                     connectorRef: Bitnami_Helm_Repo
                                             chartName: nginx
-                                            chartVersion: 8.8.1
+                                            chartVersion: ""
                                             helmVersion: V3
                                             skipResourceVersioning: false
                   infrastructure:

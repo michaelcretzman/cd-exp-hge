@@ -23,7 +23,7 @@ pipeline:
                                       spec:
                                           connectorRef: DockerHub
                                           imagePath: library/nginx
-                                          tag: stable
+                                          tag: <+input>
                                       type: DockerRegistry
                               manifests:
                                   - manifest:

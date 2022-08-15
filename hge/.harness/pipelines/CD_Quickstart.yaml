@@ -46,9 +46,9 @@ pipeline:
                                     type: String
                                     value: <+input>
                               manifestOverrideSets: []
-                      serviceRef: <+input>
+                      serviceRef: quickstart
                   infrastructure:
-                      environmentRef: <+input>
+                      environmentRef: test1
                       infrastructureDefinition:
                           type: KubernetesDirect
                           spec:

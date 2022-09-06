@@ -1,7 +1,7 @@
 connector:
   name: mcretzman_github_account
   identifier: mcretzman_github_account
-  description:
+  description: ""
   orgIdentifier: default
   projectIdentifier: CD_Examples
   type: Github

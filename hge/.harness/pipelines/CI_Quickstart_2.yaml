@@ -134,6 +134,23 @@ pipeline:
                       imagePath: cretzman/ciquickstart
                       tag: <+pipeline.sequenceId>
                     type: DockerRegistry
+                manifests:
+                  - manifest:
+                      identifier: mainfests
+                      type: K8sManifest
+                      spec:
+                        store:
+                          type: Github
+                          spec:
+                            connectorRef: mcretzman_github_account
+                            gitFetchType: Branch
+                            paths:
+                              - default-k8s-manifests/Manifests/Files/templates
+                            repoName: harness-docs
+                            branch: main
+                        valuesPaths:
+                          - default-k8s-manifests/Manifests/Files/ng-values.yaml
+                        skipResourceVersioning: false
               type: Kubernetes
           execution:
             steps:
